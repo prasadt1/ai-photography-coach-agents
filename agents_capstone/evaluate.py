@@ -17,6 +17,10 @@ import os
 import sys
 from typing import Dict, Any, List, Optional
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Handle imports from both project root and agents_capstone/ directory
 if "agents_capstone" not in sys.modules:
@@ -25,6 +29,9 @@ if "agents_capstone" not in sys.modules:
         sys.path.insert(0, str(project_root))
 
 import google.generativeai as genai
+
+# Configure Gemini API for LLM-as-Judge scoring
+genai.configure(api_key=os.environ.get("GOOGLE_API_KEY"))
 
 from agents_capstone.agents.orchestrator import Orchestrator
 from agents_capstone.agents.vision_agent import VisionAgent
@@ -48,7 +55,7 @@ Provide a JSON object with keys: relevance, completeness, accuracy, actionabilit
 """
 
 
-def score_response_with_llm(response: str, llm_model: str = "gemini-1.5-flash") -> Dict[str, Any]:
+def score_response_with_llm(response: str, llm_model: str = "gemini-2.5-flash") -> Dict[str, Any]:
     """Use LLM-as-Judge to score a coaching response."""
     try:
         model = genai.GenerativeModel(llm_model)
@@ -162,10 +169,15 @@ def evaluate_sample(
         t0 = time.time()
         
         try:
-            res = orch.run(user_id="eval_user", image_path=image_path, query=prompt)
+            # Use unique user_id per prompt to avoid cross-contamination
+            res = orch.run(user_id=f"eval_user_{i}", image_path=image_path, query=prompt)
             latency = time.time() - t0
             coach_text = res.get("coach", {}).get("text", "")
             vision_summary = res.get("vision", {}).get("composition_summary", "") if res.get("vision") else ""
+            
+            # Debug: Check if we got a fallback response
+            if coach_text.startswith("Based on your question about"):
+                print(f"    ⚠️  WARNING: Got fallback response (Gemini API may have failed)")
             
             # Score with LLM if available
             llm_scores = {}

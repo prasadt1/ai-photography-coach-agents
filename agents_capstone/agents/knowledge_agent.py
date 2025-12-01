@@ -156,7 +156,7 @@ class KnowledgeAgent:
         try:
             # Build principles context from knowledge base retrieval
             principles_text = "\n".join([
-                f"- {p.title}: {p.description}" for p in principles[:3]
+                f"- {p.topic}: {p.text}" for p in principles[:3]
             ]) if principles else "No specific principles found."
 
             # Structured prompt with clear sections and coaching guidelines
@@ -182,13 +182,16 @@ Provide helpful, specific photography coaching that:
 
 Respond as a friendly photography coach, not as a template."""
 
-            # Call Gemini 1.5 Flash API
+            # Call Gemini API (using latest flash model)
             # Note: API key configured via environment variable GOOGLE_API_KEY
-            model = genai.GenerativeModel("gemini-1.5-flash")
+            model = genai.GenerativeModel("gemini-2.5-flash")
             response = model.generate_content(prompt)
             return response.text
         except Exception as e:
             # Fallback if LLM fails (API errors, rate limits, network issues)
+            # Log the error for debugging
+            import sys
+            print(f"DEBUG KnowledgeAgent LLM error: {type(e).__name__}: {str(e)[:200]}", file=sys.stderr)
             return self._generate_fallback_response(query, issues)
 
     def _generate_fallback_response(self, query: str, issues: List[str]) -> str:

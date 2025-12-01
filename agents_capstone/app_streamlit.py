@@ -1,5 +1,6 @@
 import os
 from typing import Dict, Any, List
+from dotenv import load_dotenv
 
 import streamlit as st
 from PIL import Image
@@ -10,6 +11,9 @@ from agents_capstone.agents.vision_agent import VisionAgent
 from agents_capstone.agents.knowledge_agent import KnowledgeAgent
 from agents_capstone.logging_config import configure_logging
 from agents_capstone.tools import adk_adapter as memory_tool
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Initialize memory backend (ADK if available, otherwise sqlite)
 memory_tool.init()
@@ -412,7 +416,10 @@ with col_right:
         
         # Observability panel (persisted memory + logs)
         with st.expander("Observability", expanded=False):
-            st.write("last_error:", st.session_state.get("last_error"))
+            # Filter out credential errors (expected when not using Google Cloud)
+            last_err = st.session_state.get("last_error")
+            if last_err and "default credentials" not in str(last_err).lower():
+                st.write("last_error:", last_err)
             st.write("last_debug_logs:", st.session_state.get("last_debug_logs"))
             # show compacted summary from persisted session if available
             if st.session_state.get("image_path"):
