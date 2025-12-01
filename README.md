@@ -57,7 +57,7 @@ Open **http://localhost:8501** → Upload a photo → Start chatting! 🎉
 
 **🚀 Try it Live:** [ai-photography-coach.streamlit.app](https://ai-photography-coach.streamlit.app) *(Requires free Google Gemini API key)*
 
-**📺 Watch the Demo:** [YouTube - 3 minutes](https://youtu.be/ggN3Xzw45Ls)
+**📺 Watch the Demo:** [YouTube - 2:38 minutes](https://youtu.be/U77vk71Hmzc)
 
 See the system in action:
 - Live photo upload & EXIF extraction
