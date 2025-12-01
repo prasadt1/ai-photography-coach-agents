@@ -15,19 +15,58 @@ from agents_capstone.tools import adk_adapter as memory_tool
 # Load environment variables from .env file
 load_dotenv()
 
-# Initialize memory backend (ADK if available, otherwise sqlite)
-memory_tool.init()
-
-genai.configure(api_key=os.environ.get("GOOGLE_API_KEY"))
-
-vision_agent = VisionAgent()
-knowledge_agent = KnowledgeAgent()
-orchestrator = Orchestrator(vision_agent, knowledge_agent)
-
 st.set_page_config(page_title="AI Photo Coach", page_icon="📷", layout="wide")
 
 # Configure logging for observability
 configure_logging()
+
+# ==================== API KEY AUTHENTICATION ====================
+# Allow users to provide their own API key for cost protection
+st.sidebar.title("🔑 API Configuration")
+st.sidebar.markdown("""
+This app uses Google Gemini API. You have two options:
+
+**Option 1: Use Demo Key** (Limited usage)
+- Uses a shared demo key
+- May hit rate limits if heavily used
+
+**Option 2: Use Your Own Key** (Recommended)
+- Get your free API key: [Google AI Studio](https://aistudio.google.com/app/apikey)
+- No cost limits from shared usage
+""")
+
+use_own_key = st.sidebar.checkbox("I want to use my own API key", value=False)
+
+if use_own_key:
+    user_api_key = st.sidebar.text_input(
+        "Enter your Google Gemini API Key:",
+        type="password",
+        help="Your API key will not be stored and is only used for this session"
+    )
+    if not user_api_key:
+        st.warning("⚠️ Please enter your API key in the sidebar to continue")
+        st.info("👉 Get your free API key at: https://aistudio.google.com/app/apikey")
+        st.stop()
+    api_key = user_api_key
+    st.sidebar.success("✅ Using your API key")
+else:
+    # Use environment variable (for demo/development)
+    api_key = os.environ.get("GOOGLE_API_KEY")
+    if not api_key:
+        st.error("❌ Demo API key not configured. Please use your own API key.")
+        st.stop()
+    st.sidebar.info("ℹ️ Using shared demo key (may have rate limits)")
+
+# Configure Gemini with the selected API key
+genai.configure(api_key=api_key)
+
+# Initialize memory backend (ADK if available, otherwise sqlite)
+memory_tool.init()
+
+# Initialize agents
+vision_agent = VisionAgent()
+knowledge_agent = KnowledgeAgent()
+orchestrator = Orchestrator(vision_agent, knowledge_agent)
 
 # Custom CSS for better styling
 st.markdown("""
