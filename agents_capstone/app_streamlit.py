@@ -25,44 +25,43 @@ st.set_page_config(page_title="AI Photo Coach", page_icon="📷", layout="wide")
 configure_logging()
 
 # ==================== API KEY AUTHENTICATION ====================
-# Allow users to provide their own API key for cost protection
-st.sidebar.title("🔑 API Configuration")
+# Require users to provide their own API key for public deployment
+st.sidebar.title("🔑 Setup Required")
 st.sidebar.markdown("""
-This app uses Google Gemini API. You have two options:
+To use this AI Photography Coach, you need a **free** Google Gemini API key.
 
-**Option 1: Use Demo Key** (Limited usage)
-- Uses a shared demo key
-- May hit rate limits if heavily used
+### How to get your API key:
+1. Visit [Google AI Studio](https://aistudio.google.com/app/apikey)
+2. Sign in with your Google account
+3. Click "Create API Key"
+4. Copy and paste it below
 
-**Option 2: Use Your Own Key** (Recommended)
-- Get your free API key: [Google AI Studio](https://aistudio.google.com/app/apikey)
-- No cost limits from shared usage
+**Note:** Your API key is never stored and only used during this session.
 """)
 
-use_own_key = st.sidebar.checkbox("I want to use my own API key", value=False)
+user_api_key = st.sidebar.text_input(
+    "Enter your Google Gemini API Key:",
+    type="password",
+    help="Get your free API key at: https://aistudio.google.com/app/apikey"
+)
 
-if use_own_key:
-    user_api_key = st.sidebar.text_input(
-        "Enter your Google Gemini API Key:",
-        type="password",
-        help="Your API key will not be stored and is only used for this session"
-    )
-    if not user_api_key:
-        st.warning("⚠️ Please enter your API key in the sidebar to continue")
-        st.info("👉 Get your free API key at: https://aistudio.google.com/app/apikey")
-        st.stop()
-    api_key = user_api_key
-    st.sidebar.success("✅ Using your API key")
-else:
-    # Use environment variable (for demo/development)
-    api_key = os.environ.get("GOOGLE_API_KEY")
-    if not api_key:
-        st.error("❌ Demo API key not configured. Please use your own API key.")
-        st.stop()
-    st.sidebar.info("ℹ️ Using shared demo key (may have rate limits)")
+if not user_api_key:
+    st.warning("⚠️ **API Key Required**")
+    st.info("""
+    This app needs a Google Gemini API key to function. Don't worry - it's completely free!
+    
+    **Steps to get started:**
+    1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey)
+    2. Create a free API key (takes ~30 seconds)
+    3. Paste it in the sidebar
+    4. Start getting photography coaching!
+    """)
+    st.stop()
 
-# Configure Gemini with the selected API key
-genai.configure(api_key=api_key)
+st.sidebar.success("✅ API key configured")
+
+# Configure Gemini with the user's API key
+genai.configure(api_key=user_api_key)
 
 # Initialize memory backend (ADK if available, otherwise sqlite)
 memory_tool.init()
