@@ -390,7 +390,7 @@ MIT License – see [LICENSE](LICENSE) file for details.
 - **Streamlit Community** – UI framework & examples
 - **Photography Community** – Feedback on coaching quality
 
-Built with ❤️ in 5 days (Dec 2024) as part of the Google AI Agents Intensive capstone project.
+Built with ❤️ in 5 days (Dec 2025) as part of the Google AI Agents Intensive capstone project.
 
 ---
 
