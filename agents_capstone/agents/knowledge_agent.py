@@ -182,9 +182,9 @@ Provide helpful, specific photography coaching that:
 
 Respond as a friendly photography coach, not as a template."""
 
-            # Call Gemini API (using latest flash model)
-            # Note: API key configured via environment variable GOOGLE_API_KEY
-            model = genai.GenerativeModel("gemini-2.5-flash")
+            # Call Gemini API (using stable flash model)
+            # Note: API key configured globally via genai.configure()
+            model = genai.GenerativeModel("gemini-1.5-flash")
             response = model.generate_content(prompt)
             return response.text
         except Exception as e:

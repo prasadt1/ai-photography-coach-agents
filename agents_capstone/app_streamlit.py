@@ -61,12 +61,14 @@ if not user_api_key:
 st.sidebar.success("✅ API key configured")
 
 # Configure Gemini with the user's API key
+# IMPORTANT: Must configure BEFORE initializing agents
 genai.configure(api_key=user_api_key)
 
 # Initialize memory backend (ADK if available, otherwise sqlite)
 memory_tool.init()
 
-# Initialize agents
+# Initialize agents with configured API key
+# Note: These use the globally configured genai instance
 vision_agent = VisionAgent()
 knowledge_agent = KnowledgeAgent()
 orchestrator = Orchestrator(vision_agent, knowledge_agent)
