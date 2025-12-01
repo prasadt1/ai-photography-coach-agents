@@ -86,3 +86,11 @@ htmlcov/
 # Docker
 *.tar
 *.tar.gz
+
+# Internal documentation (recording/development notes)
+NARRATION_SCRIPT_SHORT.md
+LOOM_RECORDING_SETUP.md
+PRE_RECORDING_CHECKLIST.md
+YOUTUBE_THUMBNAIL_GUIDE.md
+VIDEO_RECORDING_GUIDE.md
+VIDEO_SCRIPT.md
