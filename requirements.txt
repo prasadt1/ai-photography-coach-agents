@@ -1,9 +1,9 @@
 # Python 3.11+ recommended (tested on 3.11.14)
 streamlit==1.30.0
-Pillow==10.0.0
-google-generativeai==0.4.0
-numpy==1.26.0
-python-dotenv==1.0.0
+Pillow>=10.0.0
+google-generativeai>=0.4.0
+numpy>=1.26.0
+python-dotenv>=1.0.0
 faiss-cpu
 sentence-transformers
 
