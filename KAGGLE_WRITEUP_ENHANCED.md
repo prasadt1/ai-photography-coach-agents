@@ -2,6 +2,8 @@
 
 **GitHub Repository:** https://github.com/prasadt1/ai-photography-coach-agents.git
 
+**Demo Video:** [Watch on YouTube](https://youtu.be/FakpaLKnodY) (4:37 minutes)
+
 ---
 
 ## Problem Statement

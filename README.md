@@ -55,13 +55,13 @@ Open **http://localhost:8501** → Upload a photo → Start chatting! 🎉
 
 ## 🎥 Demo Video
 
-**Watch the full demo:** [YouTube Link Coming Soon]
+**Watch the full demo:** [YouTube - 4:37 minutes](https://youtu.be/FakpaLKnodY)
 
 See the system in action:
 - Live photo upload & EXIF extraction
 - Real-time Gemini coaching responses
 - Multi-turn contextual conversations
-- Evaluation results (8.6/10 average score)
+- Evaluation results (8.5/10 average score)
 
 ---
 
