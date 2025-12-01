@@ -1,10 +1,14 @@
 import os
+import sys
 from typing import Dict, Any, List
 from dotenv import load_dotenv
 
 import streamlit as st
 from PIL import Image
 import google.generativeai as genai
+
+# Add parent directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from agents_capstone.agents.orchestrator import Orchestrator
 from agents_capstone.agents.vision_agent import VisionAgent
