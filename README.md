@@ -1,35 +1,63 @@
-# 📷 AI Photography Coach – Google MCP + ADK Capstone Demo
+# 📷 AI Photography Coach – 3-Platform Agent Deployment
 
 > **Google AI Agents Intensive Capstone Project**  
-> Demonstrating Model Context Protocol (MCP) and Agent Development Kit (ADK) readiness
+> Demonstrating ADK Runner + MCP Server + Python API with same core agents
 
 ---
 
 ## 🎯 Capstone Focus
 
-This branch demonstrates a **production-grade multi-agent photography coaching system** built with Google's agent technologies:
+This project demonstrates **architectural reusability** by deploying the same multi-agent photography coaching system across **three different platforms**:
 
-- ✅ **MCP Server** (PRIMARY): Full JSON-RPC 2.0 server for Claude Desktop integration
-- ✅ **ADK-Ready Tools**: Vertex AI Agent Builder compatible schemas (awaiting public ADK SDK)
+- ✅ **ADK Runner (NEW!)**: Real `google.adk` integration with LlmAgent + Runner + Sessions
+- ✅ **MCP Server**: Full JSON-RPC 2.0 server for Claude Desktop integration  
+- ✅ **Python API**: Direct agent imports for custom integrations
 - ✅ **Multi-Agent Architecture**: Vision Agent + Knowledge Agent + Orchestrator
 - ✅ **Hybrid CASCADE RAG**: Novel retrieval architecture combining curated + vector + LLM grounding
 
-**Note:** ADK SDK (`google.adk`) is not yet publicly available. Tools are structured with ADK-compatible schemas ready for deployment once SDK is released.
+**Key Innovation:** Same agents (`VisionAgent`, `KnowledgeAgent`) work identically across all three platforms, demonstrating framework independence and deployment flexibility.
 
 ---
 
-## 🚀 Quick Demo
+## 🚀 Quick Demo (3 Platforms)
 
-### Option 1: MCP Server (Claude Desktop Integration)
+### **All-in-One Demo** (Recommended!)
 
 ```bash
-# 1. Set API key
+# See all three platforms in action
+python3 demo_3_platforms.py
+
+# Shows:
+#   Platform 1: ADK Runner with google.adk SDK
+#   Platform 2: MCP Server for Claude Desktop
+#   Platform 3: Python API for custom apps
+```
+
+### Option 1: ADK Runner (Google Agent Framework)
+
+```bash
+# 1. Install dependencies
+pip install google-adk google-genai
+
+# 2. Set API key
 export GOOGLE_API_KEY="your_gemini_api_key"
 
-# 2. Run MCP server
+# 3. Run ADK agent
+python3 agents_capstone/adk_runner.py
+
+# Shows:
+#    - LlmAgent with Gemini 2.5 Flash
+#    - Runner with InMemorySessionService
+#    - Session continuity across turns
+```
+
+### Option 2: MCP Server (Claude Desktop Integration)
+
+```bash
+# 1. Run MCP server
 python3 agents_capstone/tools/mcp_server.py
 
-# 3. Configure Claude Desktop (add to config.json):
+# 2. Configure Claude Desktop (add to config.json):
 {
   "mcpServers": {
     "photography-coach": {
@@ -42,26 +70,25 @@ python3 agents_capstone/tools/mcp_server.py
   }
 }
 
-# 4. Use in Claude Desktop:
+# 3. Use in Claude Desktop:
 # "Analyze this photo for composition issues..."
 ```
 
-### Option 2: ADK-Ready Tools (Schema Demonstration)
+### Option 3: Python API (Direct Integration)
 
 ```bash
-# 1. Set up credentials
-export GOOGLE_API_KEY="your_gemini_api_key"
+# Import and use agents directly
+from agents_capstone.agents.vision_agent import VisionAgent
+from agents_capstone.agents.knowledge_agent import KnowledgeAgent
 
-# 2. View ADK-compatible tool definitions
-python3 demo_adk.py
+vision = VisionAgent()
+knowledge = KnowledgeAgent()
 
-# Shows:
-#    - JSON schemas for Vertex AI Agent Builder
-#    - Tool function signatures
-#    - Ready for ADK SDK once publicly available
+analysis = vision.analyze("photo.jpg", "intermediate")
+response = knowledge.coach(query="How to improve?", 
+                           vision_analysis=analysis, 
+                           session={"history": []})
 ```
-
-**Note:** Actual ADK deployment requires `google.adk` package (not yet public).
 
 ---
 
@@ -89,12 +116,17 @@ EXIF + Issues    Coaching + Citations
 2. **`get_coaching`**: Personalized photography advice with RAG citations
 3. **`suggest_exercise`**: Practice exercises based on detected issues
 
-### ADK Integration
+### Platform Comparison
 
-- Compatible with Vertex AI Agent Builder
-- Declarative tool definitions
-- Async execution support
-- Structured output validation
+| Feature | ADK Runner | MCP Server | Python API |
+|---------|-----------|-----------|-----------|
+| **Framework** | google.adk | JSON-RPC 2.0 | Direct imports |
+| **Use Case** | Cloud (Vertex AI) | Desktop (Claude) | Custom apps |
+| **Session Mgmt** | InMemorySessionService | Custom dict | Custom dict |
+| **Async** | Yes (Runner) | Yes (stdio) | Sync |
+| **Best For** | Enterprise scale | Local AI assistant | Notebooks, scripts |
+
+All three use **identical core agents** - zero code duplication!
 
 ---
 

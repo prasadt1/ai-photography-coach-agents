@@ -13,5 +13,6 @@ langchain-community>=0.0.20
 langchain-text-splitters>=0.0.1
 pypdf>=3.17.0
 
-# ADK (Google Agent Development Kit) - framework concepts implemented
-# ADK package not yet publicly available; project is ADK-ready via adapter pattern
+# ADK (Google Agent Development Kit) - Real integration with google-adk SDK
+google-adk==1.19.0
+google-genai>=0.3.0
