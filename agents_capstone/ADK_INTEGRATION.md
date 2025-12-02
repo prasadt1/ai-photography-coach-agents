@@ -94,9 +94,11 @@ If ADK is not installed, logs will show:
 
 ## Expanding ADK Integration
 
-### Step 1: Formalize Agents as ADK Tools
+### ✅ Step 1: Formalize Agents as ADK Tools (IMPLEMENTED)
 
-Create `agents_capstone/adk_tools.py`:
+**File:** `agents_capstone/adk_tools.py`
+
+The agents are now formalized as ADK-compatible tool functions with full schema definitions:
 
 ```python
 """ADK Tool definitions for vision and coaching agents."""
@@ -222,18 +224,69 @@ Upload an image and ask a question. Check logs for:
 
 ---
 
-## Next Steps for Capstone Submission
+## ✅ Implemented Enhancements (Phase 2 & 3)
 
-1. **Expand `evaluate.py`** to score agent responses using LLM-as-Judge.
-2. **Add WRITEUP.md** that maps each course concept (Days 1–5) to implemented code.
-3. **Optional ADK extensions:**
-   - Formalize agents as ADK Tools (see Step 1 above).
-   - Implement MCP server for tool bridging.
-   - Deploy to Vertex AI Agent Engine with cloud-backed sessions.
-4. **Final polish:**
-   - Add demo notebook showing end-to-end flow.
-   - Create a short video or GIF of the app in action.
-   - Prepare submission package with instructions.
+### Phase 2: Enhanced Vision Analysis
+- **Gemini Vision API Integration** - Real AI-powered composition analysis
+- **Structured Issue Detection** - Severity scoring (low/medium/high) with suggestions
+- **Strengths Detection** - Identifies positive aspects of photos
+- **Adaptive Feedback** - Skill-level personalized analysis
+
+### Phase 3: MCP Server + ADK Tools
+- **MCP Server** (`tools/mcp_server.py`) - Full JSON-RPC implementation
+- **ADK Tools** (`adk_tools.py`) - Formalized tool definitions
+- **Claude Desktop Integration** - Ready for MCP client connection
+- **Three MCP Tools:**
+  1. `analyze_photo` - Vision analysis with structured output
+  2. `coach_on_photo` - Personalized coaching with history
+  3. `get_session_history` - Session retrieval and statistics
+
+### Usage Examples
+
+**MCP Server (Claude Desktop, VS Code, etc.):**
+```bash
+# Run server
+./run_mcp_server.sh
+
+# Or directly
+python3 -m agents_capstone.tools.mcp_server
+```
+
+**ADK Tools (Programmatic):**
+```python
+from agents_capstone.adk_tools import analyze_photo_tool, coach_on_photo_tool
+
+# Analyze a photo
+result = analyze_photo_tool("photo.jpg", skill_level="intermediate")
+print(result["composition_summary"])
+
+# Get coaching
+coaching = coach_on_photo_tool(
+    query="How can I improve this?",
+    vision_analysis=result,
+    session={"skill_level": "intermediate"}
+)
+print(coaching["text"])
+```
+
+**Claude Desktop Integration:**
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
+```json
+{
+  "mcpServers": {
+    "photography-coach": {
+      "command": "/path/to/run_mcp_server.sh"
+    }
+  }
+}
+```
+
+## Next Steps for Advanced Deployment
+
+1. **Vertex AI Agent Engine** - Deploy ADK tools to Google Cloud
+2. **A2A Protocol** - Multi-agent communication for complex workflows
+3. **Cloud-Backed Sessions** - Firestore/Cloud SQL for persistence
+4. **Trace Export** - Integration with Cloud Logging and Monitoring
 
 ---
 
