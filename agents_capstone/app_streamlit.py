@@ -238,12 +238,8 @@ def run_turn(user_question: str) -> None:
 
 # ---------- UI LAYOUT ----------
 
-# Progress indicator at top (above columns) - visible regardless of scroll position
-if "analyzing" in st.session_state and st.session_state["analyzing"]:
-    with st.status("🔍 Analyzing your photo...", expanded=True) as status:
-        st.write("📸 Extracting EXIF data...")
-        st.write("🎨 Analyzing composition with Gemini Vision...")
-        st.write("💬 Preparing coaching interface...")
+# Create a placeholder at the VERY TOP for progress indicator (outside columns)
+status_placeholder = st.empty()
 
 col_left, col_right = st.columns([1.1, 1.4])
 
@@ -288,8 +284,8 @@ with col_left:
         
         # Run initial vision analysis on photo upload if we haven't already
         if st.session_state["last_result"] is None:
-            # Use status widget at top of page for better visibility
-            with st.status("🔍 Analyzing your photo...", expanded=True) as status:
+            # Show status at the TOP of page using placeholder
+            with status_placeholder.status("🔍 Analyzing your photo...", expanded=True) as status:
                 st.write("📤 Step 1/3: Processing image...")
                 
                 # Vision analysis
