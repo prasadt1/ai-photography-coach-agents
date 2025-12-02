@@ -19,7 +19,11 @@ from pathlib import Path
 def _lazy_imports():
     """Import heavy dependencies only when actually using FAISS"""
     global RecursiveCharacterTextSplitter, PyPDFLoader, HuggingFaceEmbeddings, FAISS
-    from langchain_text_splitters import RecursiveCharacterTextSplitter
+    try:
+        from langchain_text_splitters import RecursiveCharacterTextSplitter
+    except ImportError:
+        # Fallback for older langchain versions
+        from langchain.text_splitter import RecursiveCharacterTextSplitter
     from langchain_community.document_loaders import PyPDFLoader
     from langchain_community.embeddings import HuggingFaceEmbeddings
     from langchain_community.vectorstores import FAISS
