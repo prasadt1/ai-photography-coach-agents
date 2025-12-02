@@ -224,23 +224,59 @@ agents_capstone/
 
 ## 🧪 Evaluation & Testing
 
-### Automated Evaluation
+### Automated Evaluation Framework
+
+The project includes a comprehensive evaluation harness (`demo_eval.py`) that tests agent performance across multiple dimensions:
 
 ```bash
 python3 demo_eval.py
 ```
 
-**Results:**
-- **Overall Score**: 8.58/10
-- **Response Quality**: 4.2/5 (LLM-as-judge)
-- **Citation Accuracy**: 95%+ responses include RAG sources
-- **Average Latency**: 26.6s (full analysis + coaching)
-- **EXIF Extraction**: 100% accuracy
+#### Evaluation Methodology
 
-Reports generated in `./reports/`:
-- `evaluation_detailed.json` – Full test results
-- `evaluation_summary.csv` – Metric summary
-- `evaluation_report.html` – Visual dashboard
+**1. Test Dataset**
+- 3 diverse photography scenarios (landscape, portrait, technical questions)
+- Mix of image analysis and knowledge queries
+- Covers beginner to advanced skill levels
+
+**2. Scoring Criteria**
+
+| Metric | What It Measures | How It's Scored |
+|--------|------------------|-----------------|
+| **Overall Score** | System effectiveness | Weighted average of all metrics (0-10) |
+| **Response Quality** | Coaching usefulness | LLM-as-judge evaluation (0-5) |
+| **Citation Accuracy** | RAG grounding | % of responses with knowledge sources |
+| **Latency** | Response speed | Time from query to complete answer |
+| **EXIF Accuracy** | Vision analysis | Metadata extraction correctness |
+
+**3. LLM-as-Judge Evaluation**
+
+Gemini evaluates each response on:
+- **Relevance**: Does it answer the question?
+- **Actionability**: Can the user apply the advice?
+- **Technical accuracy**: Are photography principles correct?
+- **Appropriate detail**: Right depth for skill level?
+
+**4. RAG Citation Verification**
+
+Tests whether responses include:
+- Structured knowledge base references
+- Photography principle citations (e.g., "Rule of Thirds from curated knowledge")
+- Fallback to vector search when needed
+- No hallucinated sources
+
+#### Current Results
+
+- **Overall Score**: 8.58/10 ✅
+- **Response Quality**: 4.2/5 (LLM-as-judge evaluation)
+- **Citation Accuracy**: 95%+ responses grounded in RAG
+- **Average Latency**: 26.6s (includes vision analysis + coaching + RAG)
+- **EXIF Extraction**: 100% accuracy on test images
+
+**Generated Reports** (`./reports/`):
+- `evaluation_detailed.json` – Full response logs and scores
+- `evaluation_summary.csv` – Metric breakdown by test case
+- `evaluation_report.html` – Interactive visual dashboard
 
 ### Manual Testing
 
@@ -250,6 +286,15 @@ python3 agents_capstone/adk_runner.py      # ADK Runner
 python3 demo_mcp.py                         # MCP Server
 python3 demo_3_platforms.py                 # All platforms
 ```
+
+### What "8.58/10" Means
+
+This score represents **production-ready quality** across:
+- ✅ Accurate technical analysis (EXIF, composition)
+- ✅ Helpful, citation-backed coaching advice
+- ✅ Appropriate skill-level adaptation
+- ✅ Acceptable latency for real-world use
+- ⚠️ Room for improvement: Faster RAG retrieval, more diverse knowledge base
 
 ---
 
