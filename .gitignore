@@ -103,3 +103,8 @@ KAGGLE_WRITEUP_ENHANCED.md
 CONVERSATION_SUMMARY.md
 VIDEO_SCRIPT_SHORT.md
 VIDEO_SLIDES.md
+
+# Generated knowledge base data (large files, not needed in repo)
+agents_capstone/data/embeddings.npy
+agents_capstone/data/faiss_index/
+agents_capstone/data/pdfs/
