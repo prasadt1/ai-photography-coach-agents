@@ -267,11 +267,8 @@ Respond as a friendly photography coach, not as a template."""
     def _generate_exercise(self, issues: List[str]) -> str:
         """Generate a practice exercise based on detected issues.
         
-        Exercise Strategy: Map each issue type to targeted practice activity
-        Goal: Provide actionable next steps for skill improvement
-        
-        Future Enhancement: Use LLM to generate personalized exercises
-        based on user's skill level and specific photo characteristics
+        Uses Gemini to create personalized, issue-specific exercises
+        instead of generic templates.
         
         Args:
             issues: List of detected photo issues
@@ -279,11 +276,43 @@ Respond as a friendly photography coach, not as a template."""
         Returns:
             Actionable practice exercise string
         """
-        # Map issues to targeted exercises
-        if "subject_centered" in issues:
-            return "Exercise: Take 10 photos of the same scene. For each frame, place the subject on a different position using the rule of thirds. Review which feels most compelling."
-        elif "shallow_depth_of_field" in issues:
-            return "Exercise: Practice focus placement with a wide aperture. Take shots with focus on different elements to master depth control."
-        else:
-            # Default exercise for general improvement
-            return "Exercise: Spend 30 minutes taking photos of one subject from different angles, distances, and compositions. Note what works best."
+        if not issues:
+            return "Exercise: Practice the rule of thirds - take 10 photos placing subjects at different grid intersections."
+        
+        try:
+            # Use Gemini to generate personalized exercise
+            prompt = f"""Based on these photography issues detected in a photo: {', '.join(issues)}
+
+Generate ONE specific, actionable 30-minute practice exercise to improve these skills.
+
+Requirements:
+- Focus on the MOST critical issue
+- Be specific (e.g., "take 10 photos" not "practice composition")
+- Include what to look for or measure
+- Keep it under 25 words
+- Start with "Exercise: "
+
+Example: "Exercise: Take 15 shots of one subject, changing only your position. Compare how angles affect visual impact."
+
+Your exercise:"""
+
+            model = genai.GenerativeModel("gemini-2.5-flash")
+            response = model.generate_content(prompt)
+            exercise = response.text.strip()
+            
+            # Ensure it starts with "Exercise: "
+            if not exercise.startswith("Exercise:"):
+                exercise = "Exercise: " + exercise
+            
+            return exercise
+            
+        except Exception as e:
+            # Fallback to issue-specific templates
+            if any(term in ' '.join(issues).lower() for term in ['center', 'composition', 'thirds']):
+                return "Exercise: Take 10 photos of the same scene, placing subjects at different rule of thirds intersections."
+            elif any(term in ' '.join(issues).lower() for term in ['focus', 'depth', 'sharp']):
+                return "Exercise: Practice depth of field - take 5 shots with f/2.8, f/5.6, and f/11 of the same scene."
+            elif any(term in ' '.join(issues).lower() for term in ['horizon', 'tilt', 'level']):
+                return "Exercise: Take 10 photos focusing on keeping horizons perfectly level using grid lines."
+            else:
+                return "Exercise: Take 10 photos varying one element (angle, distance, or framing) to see what improves composition."
