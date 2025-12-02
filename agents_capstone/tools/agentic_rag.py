@@ -128,7 +128,7 @@ class AgenticRAG:
         
         # Load curated knowledge base (PRIMARY)
         if knowledge_base is None:
-            from data.knowledge_sources import PHOTOGRAPHY_KNOWLEDGE
+            from agents_capstone.data.knowledge_sources import PHOTOGRAPHY_KNOWLEDGE
             self.knowledge_base = PHOTOGRAPHY_KNOWLEDGE
         else:
             self.knowledge_base = knowledge_base
@@ -166,7 +166,7 @@ class AgenticRAG:
         self.faiss_store = None
         if enable_faiss:
             try:
-                from tools.faiss_store import get_faiss_store
+                from agents_capstone.tools.faiss_store import get_faiss_store
                 self.faiss_store = get_faiss_store()
                 faiss_stats = self.faiss_store.get_stats()
                 

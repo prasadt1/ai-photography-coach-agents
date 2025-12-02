@@ -16,8 +16,9 @@ from agents_capstone.agents.knowledge_agent import KnowledgeAgent
 from agents_capstone.logging_config import configure_logging
 from agents_capstone.tools import adk_adapter as memory_tool
 
-# Load environment variables from .env file
-load_dotenv()
+# Load environment variables from .env file (look in project root)
+env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env')
+load_dotenv(env_path)
 
 st.set_page_config(page_title="AI Photo Coach", page_icon="📷", layout="wide")
 
@@ -42,6 +43,7 @@ To use this AI Photography Coach, you need a **free** Google Gemini API key.
 user_api_key = st.sidebar.text_input(
     "Enter your Google Gemini API Key:",
     type="password",
+    value=os.getenv("GOOGLE_API_KEY", ""),
     help="Get your free API key at: https://aistudio.google.com/app/apikey"
 )
 
@@ -53,7 +55,7 @@ if not user_api_key:
     **Steps to get started:**
     1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey)
     2. Create a free API key (takes ~30 seconds)
-    3. Paste it in the sidebar
+    3. Paste it in the sidebar (or add to .env file)
     4. Start getting photography coaching!
     """)
     st.stop()
@@ -191,115 +193,24 @@ def run_turn(user_question: str) -> None:
     issues_list = coach.get("issues", []) or []
     issues = ", ".join(issues_list) if issues_list else "none"
 
+    # Get coaching text which already has RAG citations from KnowledgeAgent
     coach_text = coach.get("text", "")
     exercise = coach.get("exercise", "")
 
-    prompt = f"""
-You are an AI photography mentor.
-
-Vision analysis summary:
-{summary}
-
-EXIF:
-{exif_block}
-
-Issues detected: {issues}
-
-Coaching suggestions from the analytical agent:
-{coach_text}
-
-Practice exercise:
-{exercise}
-
-User question: "{user_question}"
-
-Turn this into a friendly, concise answer (max 200 words).
-"""
-
-    try:
-        model = genai.GenerativeModel("gemini-2.5-flash")
-        with open(st.session_state["image_path"], "rb") as f:
-            img_bytes = f.read()
-        resp = model.generate_content(
-            [
-                {"text": prompt},
-                {"inline_data": {"data": img_bytes, "mime_type": "image/jpeg"}},
-            ]
-        )
-        answer = (resp.text or "").strip()
-        print("DEBUG answer:", answer[:200])
-    except Exception as e:
-        # If the external model call fails, fall back to a small local FAQ
-        # responder so follow-ups (e.g., "what is ISO?") still receive useful
-        # answers instead of repeating the same high-level coach text.
-        st.session_state["last_error"] = str(e)
-        print("DEBUG Gemini error:", e)
-
-        q = (user_question or "").lower()
-        def faq_fallback(qtext: str) -> str:
-            # Split into sub-questions by common delimiters
-            parts = [p.strip() for p in
-                     __import__('re').split(r"[\?;\n]+|\band\b|\bthen\b|,", qtext) if p.strip()]
-            answers = []
-
-            def single_answer(p: str) -> str:
-                p = p.lower()
-                if any(k in p for k in ("iso", "iso speed", "isospeed")):
-                    return (
-                        "ISO controls the camera sensor's sensitivity to light. "
-                        "Lower ISO (eg 100) = less sensitivity and less noise; "
-                        "higher ISO (eg 800+) increases sensitivity but can add grain/noise."
-                    )
-                if "aperture" in p or "fnumber" in p or "f-stop" in p or "f/" in p:
-                    return (
-                        "Aperture (f-number) controls how much light enters the lens and the depth of field. "
-                        "Smaller f-number (eg f/1.8) = wider aperture = shallower depth of field; "
-                        "larger f-number (eg f/8) = narrower aperture = more of the scene in focus."
-                    )
-                if "contrast" in p:
-                    return (
-                        "Contrast describes the difference between bright and dark areas in an image. "
-                        "Higher contrast makes shadows darker and highlights brighter; lower contrast yields a flatter look."
-                    )
-                if "exposure" in p or "expose" in p or "shutter" in p or "shutter speed" in p:
-                    return (
-                        "Exposure is the total brightness of the image determined by aperture, shutter speed, and ISO. "
-                        "Use faster shutter speeds to freeze motion and slower to allow motion blur. Balance exposure to avoid blown highlights or blocked shadows."
-                    )
-                if "rule of thirds" in p or "rule of 3" in p or "third" in p:
-                    return (
-                        "The Rule of Thirds is a composition guideline: imagine a 3×3 grid and place key elements on the grid lines or intersections. "
-                        "This usually creates a more dynamic and balanced composition than centering the subject."
-                    )
-                if "depth of field" in p or "depth" in p:
-                    return (
-                        "Depth of field is how much of the scene appears acceptably sharp. Wider apertures (small f-numbers) give shallower depth of field; smaller apertures increase depth of field."
-                    )
-                # No match: return empty so we can fallback later
-                return ""
-
-            for part in parts:
-                ans = single_answer(part)
-                if ans:
-                    answers.append(ans)
-
-            if answers:
-                # Return combined unique answers
-                seen = set()
-                combined = []
-                for a in answers:
-                    if a not in seen:
-                        combined.append(a)
-                        seen.add(a)
-                return "\n\n".join(combined)
-
-            # Generic fallback uses the coach text if available, else a minimal message
-            if coach_text:
-                return coach_text
-            return "(No assistant response available due to an internal error.)"
-
-        answer = faq_fallback(q)
-        # continue rather than returning so chat_history gets appended
+    # Use the coach_text directly - it already has Agentic RAG citations!
+    # No need for another Gemini pass that would strip out the citations
+    answer = coach_text
+    
+    # Add exercise if available
+    if exercise:
+        answer += f"\n\n**💪 Practice Exercise:** {exercise}"
+    
+    print("DEBUG answer with citations:", answer[:300])
+    
+    # Fallback if coaching is empty (shouldn't happen with working agent)
+    if not answer or answer.strip() == "":
+        print("DEBUG: Empty coach response, using FAQ fallback")
+        answer = "(No coaching response available. Please try again or check your image.)"
 
     try:
         print("DEBUG before append, history len:", len(st.session_state.get("chat_history", [])))

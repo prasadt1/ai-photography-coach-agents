@@ -32,7 +32,7 @@ def _get_agentic_rag():
     global _agentic_rag
     if _agentic_rag is None:
         try:
-            from tools.agentic_rag import AgenticRAG
+            from agents_capstone.tools.agentic_rag import AgenticRAG
             _agentic_rag = AgenticRAG(enable_faiss=True)
         except Exception as e:
             print(f"⚠️ AgenticRAG not available: {e}")
@@ -204,7 +204,7 @@ Respond as a friendly photography coach, not as a template."""
 
             # Call Gemini API (using stable flash model)
             # Note: API key configured globally via genai.configure()
-            model = genai.GenerativeModel("gemini-1.5-flash")
+            model = genai.GenerativeModel("gemini-2.5-flash")
             response = model.generate_content(prompt)
             creative_response = response.text
             

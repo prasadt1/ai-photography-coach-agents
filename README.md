@@ -53,6 +53,103 @@ Open **http://localhost:8501** → Upload a photo → Start chatting! 🎉
 
 ---
 
+## 🏢 Production Deployment Modes
+
+This system demonstrates **architectural flexibility** – the same core agents deploy across multiple platforms without code duplication:
+
+### **1. Google Cloud (ADK - Production)**
+
+Deploy to Vertex AI Agent Engine using formalized ADK tools:
+
+```python
+from agents_capstone.adk_tools import TOOLS
+
+# TOOLS contains formal schemas for Vertex AI
+# - analyze_photo_tool: Vision analysis
+# - coach_on_photo_tool: Coaching with RAG citations
+
+# Use with ADK Runner
+runner = ADKRunner(tools=TOOLS)
+```
+
+**Demo:** `python3 demo_adk.py`
+
+**Features:**
+- ✅ Full JSON input/output schemas
+- ✅ Input validation and error handling
+- ✅ Compatible with Vertex AI Agent Engine
+- ✅ Production-grade tool definitions
+
+### **2. Claude Desktop (MCP Protocol)**
+
+Expose agents as JSON-RPC tools for Claude Desktop integration:
+
+```bash
+./run_mcp_server.sh
+```
+
+**Configure in:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "photography-coach": {
+      "command": "/path/to/run_mcp_server.sh",
+      "args": []
+    }
+  }
+}
+```
+
+**Demo:** `python3 demo_mcp.py`
+
+**Features:**
+- ✅ JSON-RPC 2.0 protocol compliance
+- ✅ 3 tools exposed (analyze, coach, history)
+- ✅ Works with Claude Desktop & VS Code MCP
+- ✅ Async tool execution
+
+### **3. Web Interface (Streamlit)**
+
+User-friendly web UI for demos and prototyping:
+
+```bash
+python3 -m streamlit run agents_capstone/app_streamlit.py
+```
+
+**Features:**
+- ✅ Drag-and-drop photo upload
+- ✅ Chat-style conversation interface
+- ✅ Real-time EXIF display
+- ✅ Debug observability panel
+
+### **4. Python API (Custom Integration)**
+
+Direct agent imports for custom applications:
+
+```python
+from agents_capstone.agents import Orchestrator, VisionAgent, KnowledgeAgent
+
+orchestrator = Orchestrator(VisionAgent(), KnowledgeAgent())
+result = orchestrator.run(
+    user_id="user123",
+    image_path="photo.jpg",
+    query="How can I improve this?"
+)
+```
+
+### 🎯 **Key Design Principle**
+
+All deployment modes use the **same core agents** (`agents/orchestrator.py`, `vision_agent.py`, `knowledge_agent.py`). The wrappers (`adk_tools.py`, `tools/mcp_server.py`, `app_streamlit.py`) add protocol compliance **without duplicating business logic**.
+
+This demonstrates:
+- ✅ Clean separation of concerns
+- ✅ Reusable agent architecture
+- ✅ Production-ready patterns
+- ✅ Multi-platform deployment flexibility
+
+---
+
 ## 🎥 Demo
 
 **🚀 Try it Live:** [ai-photography-coach.streamlit.app](https://ai-photography-coach.streamlit.app) *(Requires free Google Gemini API key)*
