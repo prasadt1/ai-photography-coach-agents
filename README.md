@@ -1,93 +1,102 @@
-# 📷 AI Photography Coach – 3-Platform Agent Deployment
+# 📷 AI Photography Coach – Multi-Platform Agent System
 
 > **Google AI Agents Intensive Capstone Project**  
-> Demonstrating ADK Runner + MCP Server + Python API with same core agents
+> Production-grade agent deployment across ADK, MCP, and Python API
 
 ---
 
-## 🎯 Capstone Focus
+## 🎯 Project Overview
 
-This project demonstrates **architectural reusability** by deploying the same multi-agent photography coaching system across **three different platforms**:
+A **multi-agent photography coaching system** built with Google's agent technologies, demonstrating architectural reusability through three deployment platforms:
 
-- ✅ **ADK Runner (NEW!)**: Real `google.adk` integration with LlmAgent + Runner + Sessions
-- ✅ **MCP Server**: Full JSON-RPC 2.0 server for Claude Desktop integration  
-- ✅ **Python API**: Direct agent imports for custom integrations
-- ✅ **Multi-Agent Architecture**: Vision Agent + Knowledge Agent + Orchestrator
-- ✅ **Hybrid CASCADE RAG**: Novel retrieval architecture combining curated + vector + LLM grounding
+- **ADK Runner**: Cloud-native deployment with `google.adk` (LlmAgent + Runner + Sessions)
+- **MCP Server**: JSON-RPC 2.0 server for Claude Desktop integration  
+- **Python API**: Direct agent imports for custom applications
+- **Multi-Agent Architecture**: Vision Agent + Knowledge Agent + Orchestrator
+- **Hybrid CASCADE RAG**: Novel retrieval combining curated knowledge, vector search, and LLM grounding
 
-**Key Innovation:** Same agents (`VisionAgent`, `KnowledgeAgent`) work identically across all three platforms, demonstrating framework independence and deployment flexibility.
+**Core Innovation:** Single agent implementation (`VisionAgent`, `KnowledgeAgent`) deploys identically across all platforms with zero code duplication, demonstrating framework-independent architecture.
 
 ---
 
-## 🚀 Quick Demo (3 Platforms)
+## 🚀 Quick Start
 
-### **All-in-One Demo** (Recommended!)
-
-```bash
-# See all three platforms in action
-python3 demo_3_platforms.py
-
-# Shows:
-#   Platform 1: ADK Runner with google.adk SDK
-#   Platform 2: MCP Server for Claude Desktop
-#   Platform 3: Python API for custom apps
-```
-
-### Option 1: ADK Runner (Google Agent Framework)
+### Unified Demo (Recommended)
 
 ```bash
-# 1. Install dependencies
-pip install google-adk google-genai
+# Install dependencies
+pip install -r requirements.txt
 
-# 2. Set API key
+# Set API key
 export GOOGLE_API_KEY="your_gemini_api_key"
 
-# 3. Run ADK agent
-python3 agents_capstone/adk_runner.py
-
-# Shows:
-#    - LlmAgent with Gemini 2.5 Flash
-#    - Runner with InMemorySessionService
-#    - Session continuity across turns
+# Run 3-platform demonstration
+python3 demo_3_platforms.py
 ```
 
-### Option 2: MCP Server (Claude Desktop Integration)
+This shows all three deployment platforms in a single run:
+- **ADK Runner**: Cloud-native agent execution
+- **MCP Server**: Claude Desktop integration
+- **Python API**: Direct programmatic access
+
+---
+
+## 📋 Platform-Specific Usage
+
+### ADK Runner (Cloud Deployment)
 
 ```bash
-# 1. Run MCP server
+# Run ADK agent with session management
+python3 agents_capstone/adk_runner.py
+
+# Features:
+# - LlmAgent with Gemini 2.5 Flash
+# - Runner with InMemorySessionService
+# - Async event streaming
+# - Full session continuity
+```
+
+### MCP Server (Desktop Integration)
+
+```bash
+# Start server
 python3 agents_capstone/tools/mcp_server.py
 
-# 2. Configure Claude Desktop (add to config.json):
+# Configure Claude Desktop (claude_desktop_config.json):
 {
   "mcpServers": {
     "photography-coach": {
       "command": "python3",
-      "args": ["/path/to/agents_capstone/tools/mcp_server.py"],
-      "env": {
-        "GOOGLE_API_KEY": "your_key"
-      }
+      "args": ["/absolute/path/to/agents_capstone/tools/mcp_server.py"],
+      "env": {"GOOGLE_API_KEY": "your_key"}
     }
   }
 }
 
-# 3. Use in Claude Desktop:
+# Use in Claude Desktop:
 # "Analyze this photo for composition issues..."
 ```
 
-### Option 3: Python API (Direct Integration)
+### Python API (Programmatic Access)
 
-```bash
-# Import and use agents directly
+```python
 from agents_capstone.agents.vision_agent import VisionAgent
 from agents_capstone.agents.knowledge_agent import KnowledgeAgent
 
+# Initialize agents
 vision = VisionAgent()
 knowledge = KnowledgeAgent()
 
+# Analyze and coach
 analysis = vision.analyze("photo.jpg", "intermediate")
-response = knowledge.coach(query="How to improve?", 
-                           vision_analysis=analysis, 
-                           session={"history": []})
+response = knowledge.coach(
+    query="How to improve composition?",
+    vision_analysis=analysis,
+    session={"history": []}
+)
+
+print(response.text)  # AI-generated coaching advice
+print(response.principles)  # Retrieved knowledge citations
 ```
 
 ---
@@ -110,23 +119,32 @@ EXIF + Issues    Coaching + Citations
       Unified Response
 ```
 
-### MCP Tools Exposed
+### Agent Capabilities
 
-1. **`analyze_photo`**: EXIF + composition analysis
-2. **`get_coaching`**: Personalized photography advice with RAG citations
-3. **`suggest_exercise`**: Practice exercises based on detected issues
+**VisionAgent** (Gemini Vision)
+- EXIF metadata extraction (camera settings, lens data)
+- Composition analysis with severity scoring
+- Issue detection (exposure, focus, horizon, etc.)
+- Strength identification
+
+**KnowledgeAgent** (Gemini + Hybrid RAG)
+- Personalized coaching based on skill level
+- Citation-backed advice from knowledge base
+- Practice exercise generation
+- Session history awareness
 
 ### Platform Comparison
 
 | Feature | ADK Runner | MCP Server | Python API |
 |---------|-----------|-----------|-----------|
-| **Framework** | google.adk | JSON-RPC 2.0 | Direct imports |
-| **Use Case** | Cloud (Vertex AI) | Desktop (Claude) | Custom apps |
-| **Session Mgmt** | InMemorySessionService | Custom dict | Custom dict |
-| **Async** | Yes (Runner) | Yes (stdio) | Sync |
-| **Best For** | Enterprise scale | Local AI assistant | Notebooks, scripts |
+| **Framework** | google.adk | JSON-RPC 2.0 | Native Python |
+| **Deployment** | Vertex AI / Cloud | Claude Desktop | Notebooks, scripts |
+| **Session Management** | InMemorySessionService | Custom state | Custom state |
+| **Execution** | Async (Runner) | Async (stdio) | Synchronous |
+| **Use Case** | Enterprise scaling | Local AI assistant | Custom integration |
+| **Code Reuse** | ✅ Same agents | ✅ Same agents | ✅ Same agents |
 
-All three use **identical core agents** - zero code duplication!
+**Architectural Principle:** Zero code duplication across platforms – same `VisionAgent` and `KnowledgeAgent` work everywhere.
 
 ---
 
@@ -204,70 +222,77 @@ agents_capstone/
 
 ---
 
-## 🧪 Testing & Evaluation
+## 🧪 Evaluation & Testing
 
-### Run Evaluation
+### Automated Evaluation
 
 ```bash
 python3 demo_eval.py
-
-# Output:
-# - Accuracy metrics
-# - RAG citation verification
-# - Agent coordination checks
-# - Performance benchmarks
 ```
+
+**Results:**
+- **Overall Score**: 8.58/10
+- **Response Quality**: 4.2/5 (LLM-as-judge)
+- **Citation Accuracy**: 95%+ responses include RAG sources
+- **Average Latency**: 26.6s (full analysis + coaching)
+- **EXIF Extraction**: 100% accuracy
+
+Reports generated in `./reports/`:
+- `evaluation_detailed.json` – Full test results
+- `evaluation_summary.csv` – Metric summary
+- `evaluation_report.html` – Visual dashboard
 
 ### Manual Testing
 
 ```bash
-# Test MCP tools
-python3 agents_capstone/demo_mcp.py
-
-# Test ADK integration
-python3 agents_capstone/demo_adk.py
+# Test individual platforms
+python3 agents_capstone/adk_runner.py      # ADK Runner
+python3 demo_mcp.py                         # MCP Server
+python3 demo_3_platforms.py                 # All platforms
 ```
 
 ---
 
-## 📊 Key Metrics
+## 🔧 Technical Implementation
 
-- **Response Quality**: 4.2/5 average (LLM-as-judge)
-- **Citation Rate**: 95%+ responses include RAG sources
-- **Latency**: 2-4s for analysis + coaching
-- **EXIF Accuracy**: 100% (metadata extraction)
-
----
-
-## 🔧 Technical Highlights
-
-### 1. MCP Server Implementation
-- Full JSON-RPC 2.0 compliance
-- Async tool execution
-- Progress notifications
-- Error propagation
-
-### 2. ADK Tool Definitions
-```python
-@adk_tool
-def analyze_photo(image_path: str) -> dict:
-    """Analyze photo composition and technical settings."""
-    # Returns structured output for Vertex AI
-```
-
-### 3. Hybrid RAG Architecture
-- Primary: Curated knowledge (precision)
-- Secondary: FAISS vector store (recall)
-- Gemini grounding: Citation generation
-
-### 4. Multi-Agent Coordination
+### Multi-Agent Coordination
 ```python
 orchestrator = Orchestrator(
     vision_agent=VisionAgent(),
     knowledge_agent=KnowledgeAgent()
 )
-# Manages inter-agent communication
+
+result = orchestrator.process(
+    user_query="How to improve composition?",
+    image_path="photo.jpg",
+    session={"history": []}
+)
 ```
+
+### ADK Runner Integration
+```python
+from google.adk.agents import LlmAgent
+from google.adk.runners import Runner
+from google.adk.sessions import InMemorySessionService
+
+agent = LlmAgent(model="gemini-2.5-flash", name="PhotoCoach")
+runner = Runner(agent=agent, session_service=session_service)
+
+async for event in runner.run_async(user_id, session_id, new_message):
+    if event.content:
+        print(event.content.parts[0].text)
+```
+
+### MCP Server Protocol
+- JSON-RPC 2.0 over stdio transport
+- Three tools: `analyze_photo`, `coach_on_photo`, `get_session_history`
+- Full error handling and progress notifications
+- Claude Desktop compatible
+
+### Hybrid CASCADE RAG
+1. **Primary**: Curated knowledge (NumPy similarity, threshold 0.6)
+2. **Secondary**: FAISS vector store (1000+ chunks, broader coverage)
+3. **Grounding**: Gemini adds structured citations
 
 ---
 
@@ -280,23 +305,33 @@ orchestrator = Orchestrator(
 
 ---
 
-## 🎯 What Makes This Unique
+## 🎯 Key Innovations
 
-1. **Hybrid RAG**: Novel CASCADE architecture (curated → vector → LLM)
-2. **Multi-Platform**: Works with MCP (Claude), ADK (Vertex AI), standalone
-3. **Domain Expertise**: 20+ curated photography knowledge entries
-4. **Production-Ready**: Error handling, caching, logging, testing
+1. **Multi-Platform Architecture**: Single agent codebase deploys to ADK (cloud), MCP (desktop), and Python API (custom)
+2. **Hybrid CASCADE RAG**: Combines curated knowledge precision with FAISS vector breadth
+3. **Domain Specialization**: 20+ curated photography principles with 1000+ document chunks
+4. **Production Quality**: Full error handling, caching, logging, and evaluation harness
 
 ---
 
 ## 🏆 Capstone Submission
 
-**Branch**: `capstone-submission`  
 **Repository**: https://github.com/prasadt1/ai-photography-coach-agents  
-**Demo**: Run `python3 demo_adk.py` or `python3 demo_mcp.py`  
-**Evaluation**: Run `python3 demo_eval.py`
+**Branch**: `capstone-submission`
 
-**Key Innovation**: Hybrid CASCADE RAG combining curated knowledge precision with vector search breadth, grounded by Gemini for trustworthy AI coaching.
+**Quick Start:**
+```bash
+git clone https://github.com/prasadt1/ai-photography-coach-agents.git
+cd ai-photography-coach-agents
+pip install -r requirements.txt
+export GOOGLE_API_KEY="your_key"
+python3 demo_3_platforms.py
+```
+
+**Evaluation:**
+```bash
+python3 demo_eval.py  # Score: 8.58/10
+```
 
 ---
 
