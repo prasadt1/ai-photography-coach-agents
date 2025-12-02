@@ -12,16 +12,6 @@ Built as part of the **Google AI Agents Intensive Capstone Project** – showcas
 
 ---
 
-## ⚖️ License & Commercial Use
-
-This project is licensed under the **MIT License** – see [LICENSE](LICENSE) for details.
-
-**Commercial Use Welcome**: This codebase may be used for commercial purposes with proper attribution. The hybrid CASCADE RAG architecture and multi-agent system design represent novel approaches to AI-powered coaching applications.
-
-**Roadmap**: See [COMMERCIALIZATION.md](COMMERCIALIZATION.md) for product development plans and market strategy.
-
----
-
 ## 🎯 What It Does
 
 Upload any photo and get **personalized, AI-powered photography coaching** that:
