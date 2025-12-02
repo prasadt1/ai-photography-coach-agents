@@ -24,6 +24,21 @@ from typing import List, Optional, Dict, Any
 import google.generativeai as genai
 from agents_capstone.tools.knowledge_base import simple_retrieve, Principle
 
+# Lazy import for Hybrid RAG (optional dependency)
+_agentic_rag = None
+
+def _get_agentic_rag():
+    """Lazy-load AgenticRAG to avoid startup overhead"""
+    global _agentic_rag
+    if _agentic_rag is None:
+        try:
+            from tools.agentic_rag import AgenticRAG
+            _agentic_rag = AgenticRAG(enable_faiss=True)
+        except Exception as e:
+            print(f"⚠️ AgenticRAG not available: {e}")
+            _agentic_rag = False  # Disable future attempts
+    return _agentic_rag if _agentic_rag is not False else None
+
 @dataclass
 class CoachingResponse:
     """Structured coaching output for UI rendering.
@@ -133,13 +148,18 @@ class KnowledgeAgent:
         history: str,
         principles: List[Principle],
     ) -> str:
-        """Get coaching response from Gemini LLM.
+        """Get coaching response from Gemini LLM with Hybrid RAG grounding.
         
         Prompt Engineering Strategy:
         - Structured sections (Question, Issues, Principles, History)
         - Clear coaching guidelines (specific, actionable, concise)
         - Persona instruction ("friendly photography coach")
         - Context limits (3-4 sentences) to maintain focus
+        
+        Hybrid RAG Enhancement (Phase 1.5):
+        - Gemini generates creative, photo-specific coaching
+        - AgenticRAG adds grounded citations from curated + PDF knowledge
+        - CASCADE: Curated books (high quality) → FAISS PDFs (broad coverage)
         
         Model: gemini-1.5-flash chosen for speed and quality balance
         Fallback: Template-based response if API fails (prevents UI errors)
@@ -151,7 +171,7 @@ class KnowledgeAgent:
             principles: Retrieved photography principles
             
         Returns:
-            LLM-generated coaching text or fallback response
+            LLM-generated coaching text with grounded citations (if RAG available)
         """
         try:
             # Build principles context from knowledge base retrieval
@@ -186,7 +206,23 @@ Respond as a friendly photography coach, not as a template."""
             # Note: API key configured globally via genai.configure()
             model = genai.GenerativeModel("gemini-1.5-flash")
             response = model.generate_content(prompt)
-            return response.text
+            creative_response = response.text
+            
+            # HYBRID RAG: Add grounded citations to creative response
+            # This combines Gemini's creativity with authoritative sources
+            agentic_rag = _get_agentic_rag()
+            if agentic_rag:
+                # Ground the response with citations (CASCADE: curated → FAISS)
+                grounded_response = agentic_rag.ground_response(
+                    creative_response=creative_response,
+                    user_query=query,
+                    max_citations=2
+                )
+                return grounded_response
+            else:
+                # RAG not available, return Gemini's response as-is
+                return creative_response
+                
         except Exception as e:
             # Fallback if LLM fails (API errors, rate limits, network issues)
             # Log the error for debugging

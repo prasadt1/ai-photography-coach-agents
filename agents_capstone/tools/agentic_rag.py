@@ -1,10 +1,26 @@
 """
 Agentic RAG (Retrieval-Augmented Generation) for Photography Coaching
 
-This module implements a HYBRID approach:
+This module implements a HYBRID CASCADE approach:
 1. Gemini generates creative, photo-specific coaching (dynamic)
 2. RAG retrieves authoritative citations from photography literature (grounded)
 3. Agent synthesizes: Creative advice + cited sources
+
+CASCADE ARCHITECTURE:
+--------------------
+PRIMARY: Curated knowledge (20 entries)
+  ✅ High quality, verified sources (Adams, Freeman, Peterson, Kelby)
+  ✅ Proper citations from respected photography books
+  ✅ Consistent advice from photography masters
+  ⚡ Fast: NumPy in-memory search (<0.1ms)
+  📊 Use when: Confidence score >= 0.6
+
+SECONDARY: FAISS PDF knowledge (6 PDFs, ~hundreds of chunks)
+  ✅ Broader coverage across photography topics
+  ✅ Contextual information from guides/handbooks
+  ⚠️  Lower authority (random PDF collection)
+  ⚡ Fast: FAISS indexed search (~1ms)
+  📊 Use when: Curated search found nothing OR score < 0.6
 
 WHY AGENTIC RAG vs. PURE RAG?
 -------------------------------
@@ -24,16 +40,29 @@ HOW IT WORKS:
 1. KnowledgeAgent asks Gemini for coaching
 2. Gemini generates creative, photo-specific advice
 3. AgenticRAG extracts topics from Gemini's response
-4. Retrieves relevant citations matching those topics
-5. Returns: Gemini's advice + aligned citations
+4. Tries curated knowledge first (high quality)
+5. Falls back to FAISS PDFs if needed (broad coverage)
+6. Returns: Gemini's advice + aligned citations from best source
 
-EXAMPLE:
---------
-Gemini says: "Try rule of thirds for better composition"
+EXAMPLE CASCADE:
+----------------
+User: "How to improve this landscape?"
+Gemini: "Try rule of thirds for better composition"
+
 AgenticRAG:
-  - Extracts topic: "rule of thirds"
-  - Retrieves: "Rule of thirds: Position subjects at power points [Adams, 1980]"
-  - Returns: Gemini advice + citation ✅ ALIGNED
+  1. Extract topics: ["rule of thirds", "composition"]
+  2. Try curated DB: FOUND "Rule of thirds: Position at power points [Adams, 1980]" ✅ Score 0.85
+  3. Return: Gemini + curated citation (PRIMARY)
+
+Alternative scenario:
+User: "What's the Sunny 16 rule?"
+Gemini: "Sunny 16 is a classic exposure guideline..."
+
+AgenticRAG:
+  1. Extract topics: ["sunny 16", "exposure"]
+  2. Try curated DB: No match for "sunny 16" ❌ Score 0.4
+  3. Fallback to FAISS: FOUND in Photography-101-Pocket-Guide.pdf ✅
+  4. Return: Gemini + PDF citation (SECONDARY)
 
 VS. WRONG APPROACH:
 -------------------
@@ -46,7 +75,7 @@ Naive RAG:
 
 import numpy as np
 from sentence_transformers import SentenceTransformer
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Tuple
 import json
 import os
 import re
@@ -54,16 +83,27 @@ import re
 
 class AgenticRAG:
     """
-    Hybrid RAG that combines Gemini's creativity with grounded citations.
+    Hybrid CASCADE RAG that combines Gemini's creativity with grounded citations.
+    
+    Uses two-tier knowledge retrieval:
+    1. PRIMARY: Curated entries (high quality, fast)
+    2. SECONDARY: FAISS PDFs (broad coverage, fallback)
     """
     
-    def __init__(self, knowledge_base: Optional[List[Dict]] = None):
+    def __init__(
+        self, 
+        knowledge_base: Optional[List[Dict]] = None,
+        enable_faiss: bool = True,
+        curated_threshold: float = 0.6
+    ):
         """
         Initialize AgenticRAG with knowledge base and embedding model.
         
         Args:
             knowledge_base: List of dict with keys: text, source, category, topics
                            If None, loads from data/knowledge_sources.py
+            enable_faiss: Whether to load FAISS store for fallback
+            curated_threshold: Minimum score to use curated results (0-1)
         
         How sentence-transformers work:
         --------------------------------
@@ -77,15 +117,23 @@ class AgenticRAG:
         - Compact: 80MB model size
         - Accurate: 68.06 on SBERT benchmark
         - Perfect balance for this use case
+        
+        Cascade Configuration:
+        ----------------------
+        curated_threshold: Controls when to fallback to FAISS
+          0.6 = Use curated if score >= 60% confidence
+          If best curated result < threshold → fallback to FAISS
         """
-        # Load knowledge base
+        self.curated_threshold = curated_threshold
+        
+        # Load curated knowledge base (PRIMARY)
         if knowledge_base is None:
             from data.knowledge_sources import PHOTOGRAPHY_KNOWLEDGE
             self.knowledge_base = PHOTOGRAPHY_KNOWLEDGE
         else:
             self.knowledge_base = knowledge_base
         
-        print(f"📚 Loaded {len(self.knowledge_base)} knowledge entries")
+        print(f"📚 Loaded {len(self.knowledge_base)} curated knowledge entries")
         
         # Initialize sentence transformer
         # This creates vector embeddings (numeric representations) of text
@@ -99,7 +147,7 @@ class AgenticRAG:
         )
         
         if os.path.exists(embeddings_path):
-            print("✅ Loading cached embeddings...")
+            print("✅ Loading cached curated embeddings...")
             self.embeddings = np.load(embeddings_path)
         else:
             print("🔄 Generating embeddings (first time only, ~10 seconds)...")
@@ -112,7 +160,24 @@ class AgenticRAG:
             np.save(embeddings_path, self.embeddings)
             print(f"💾 Cached embeddings to {embeddings_path}")
         
-        print(f"✅ AgenticRAG initialized with {len(self.embeddings)} embeddings")
+        print(f"✅ AgenticRAG (PRIMARY) initialized with {len(self.embeddings)} embeddings")
+        
+        # Initialize FAISS store (SECONDARY) if enabled
+        self.faiss_store = None
+        if enable_faiss:
+            try:
+                from tools.faiss_store import get_faiss_store
+                self.faiss_store = get_faiss_store()
+                faiss_stats = self.faiss_store.get_stats()
+                
+                if faiss_stats['status'] == 'loaded':
+                    print(f"✅ AgenticRAG (SECONDARY) FAISS store loaded: {faiss_stats['total_vectors']} vectors")
+                else:
+                    print("⚠️  FAISS store not available (run admin UI to create index)")
+                    self.faiss_store = None
+            except Exception as e:
+                print(f"⚠️  FAISS store not available: {e}")
+                self.faiss_store = None
     
     
     def _extract_topics(self, response: str) -> List[str]:
@@ -217,6 +282,72 @@ class AgenticRAG:
         return results
     
     
+    def _retrieve_cascade(
+        self, 
+        query: str, 
+        top_k: int = 2
+    ) -> Tuple[List[Dict], str]:
+        """
+        CASCADE RETRIEVAL: Try curated first, fallback to FAISS.
+        
+        Args:
+            query: Search query (topic or user question)
+            top_k: Number of results to return
+        
+        Returns:
+            Tuple of (results_list, source_type)
+            source_type: "curated" or "faiss" to track which tier was used
+        
+        Cascade Logic:
+        --------------
+        1. Try curated knowledge (fast, high quality)
+        2. Check if best result meets threshold (>= 0.6 by default)
+        3. If yes: return curated results ✅
+        4. If no: fallback to FAISS for broader coverage
+        5. If FAISS unavailable: return curated anyway (best effort)
+        """
+        # Try PRIMARY: Curated knowledge
+        curated_results = self.retrieve_grounding(query, top_k=top_k)
+        
+        if not curated_results:
+            # No results at all (shouldn't happen, but safety check)
+            if self.faiss_store:
+                faiss_results = self.faiss_store.search(query, k=top_k)
+                return faiss_results, "faiss"
+            return [], "none"
+        
+        # Check confidence of best curated result
+        best_score = curated_results[0].get("relevance_score", 0)
+        
+        if best_score >= self.curated_threshold:
+            # HIGH CONFIDENCE: Use curated results
+            print(f"✅ Using CURATED knowledge (score: {best_score:.3f} >= {self.curated_threshold})")
+            return curated_results, "curated"
+        
+        # LOW CONFIDENCE: Try FAISS fallback
+        if self.faiss_store:
+            print(f"🔄 Curated score too low ({best_score:.3f}), trying FAISS fallback...")
+            faiss_results = self.faiss_store.search(query, k=top_k, score_threshold=0.5)
+            
+            if faiss_results:
+                print(f"✅ Using FAISS knowledge ({len(faiss_results)} results)")
+                # Convert FAISS format to our format
+                formatted = []
+                for r in faiss_results:
+                    formatted.append({
+                        "text": r["text"],
+                        "source": f"PDF: {r['source']}",
+                        "category": "pdf_knowledge",
+                        "topics": [],
+                        "relevance_score": r["score"]
+                    })
+                return formatted, "faiss"
+        
+        # FALLBACK: Return curated even if low confidence (best effort)
+        print(f"⚠️  Using curated knowledge despite low score (FAISS unavailable)")
+        return curated_results, "curated"
+    
+    
     def ground_response(
         self, 
         creative_response: str, 
@@ -226,7 +357,7 @@ class AgenticRAG:
         """
         Augment Gemini's creative response with grounded citations.
         
-        This is the MAIN METHOD that combines Gemini + RAG.
+        This is the MAIN METHOD that combines Gemini + Cascade RAG.
         
         Args:
             creative_response: Gemini's generated coaching advice
@@ -239,7 +370,7 @@ class AgenticRAG:
         Workflow:
         ---------
         1. Extract topics from Gemini's response (e.g., "rule of thirds")
-        2. Retrieve citations matching those topics
+        2. Retrieve citations matching those topics (CASCADE: curated → FAISS)
         3. Format as: Gemini's advice + "📚 Supporting Resources:" + citations
         4. Ensure citations ALIGN with what Gemini said
         
@@ -247,20 +378,23 @@ class AgenticRAG:
         --------
         Input (Gemini): "Try rule of thirds for better composition"
         Topics extracted: ["rule of thirds", "composition"]
+        Cascade: Try curated → FOUND (score 0.85) → Use curated
         Retrieved: "Rule of thirds: Position at power points [Adams, 1980]"
-        Output: Gemini's text + 📚 citation
+        Output: Gemini's text + 📚 curated citation
         """
         # Step 1: Extract topics from Gemini's response
         topics = self._extract_topics(creative_response)
         print(f"🔍 Detected topics in response: {topics}")
         
-        # Step 2: Retrieve citations for each topic
+        # Step 2: Retrieve citations for each topic (CASCADE)
         evidence = []
         seen_sources = set()  # Avoid duplicate sources
+        sources_used = []  # Track which tier provided results
         
         for topic in topics:
-            # Query RAG with the topic
-            results = self.retrieve_grounding(topic, top_k=1)
+            # Query with CASCADE: curated → FAISS
+            results, source_type = self._retrieve_cascade(topic, top_k=1)
+            sources_used.append(source_type)
             
             for result in results:
                 # Skip if we already have a citation from this source
@@ -272,15 +406,20 @@ class AgenticRAG:
         # If we found no topic-specific citations, fall back to user query
         if not evidence:
             print("⚠️  No topic-specific citations found, using user query...")
-            evidence = self.retrieve_grounding(user_query, top_k=max_citations)
+            results, source_type = self._retrieve_cascade(user_query, top_k=max_citations)
+            evidence = results
+            sources_used.append(source_type)
         
         # Step 3: Format final response
         if not evidence:
             # No citations available, return Gemini's response as-is
             return creative_response
         
+        # Determine source attribution
+        source_label = self._get_source_label(sources_used)
+        
         # Build citations section
-        citations_text = "\n\n📚 **Supporting Resources:**\n"
+        citations_text = f"\n\n📚 **Supporting Resources** ({source_label}):\n"
         for i, entry in enumerate(evidence, 1):
             # Format: • Text excerpt
             #         *Source: Citation*
@@ -291,6 +430,24 @@ class AgenticRAG:
         grounded_response = creative_response + citations_text
         
         return grounded_response
+    
+    
+    def _get_source_label(self, sources_used: List[str]) -> str:
+        """Generate label showing which knowledge tiers were used"""
+        if not sources_used:
+            return "General"
+        
+        has_curated = "curated" in sources_used
+        has_faiss = "faiss" in sources_used
+        
+        if has_curated and has_faiss:
+            return "Curated + PDF Knowledge"
+        elif has_curated:
+            return "Curated Photography Books"
+        elif has_faiss:
+            return "Photography Guides & Handbooks"
+        else:
+            return "General Knowledge"
     
     
     def get_stats(self) -> Dict:
