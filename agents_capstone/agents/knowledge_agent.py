@@ -251,8 +251,8 @@ Respond as a friendly photography coach, not as a template."""
         if "composition" in query.lower():
             response += "For composition: "
             if "subject_centered" in issues:
-                response += "Try moving your main subject to the rule of thirds. "
-            response += "Check your horizon line and use leading lines to guide the viewer."
+                response += "Consider moving the main subject to the rule of thirds. "
+            response += "Check the horizon line and use leading lines to guide the viewer."
         elif "lighting" in query.lower():
             response += "Lighting is key to great photos. Look for directional light, avoid harsh shadows, and consider the time of day."
         elif "iso" in query.lower() or "settings" in query.lower():

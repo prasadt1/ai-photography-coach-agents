@@ -29,22 +29,22 @@ configure_logging()
 # Require users to provide their own API key for public deployment
 st.sidebar.title("🔑 Setup Required")
 st.sidebar.markdown("""
-To use this AI Photography Coach, you need a **free** Google Gemini API key.
+To use this AI Photography Coach, a **free** Google Gemini API key is required.
 
-### How to get your API key:
+### How to obtain an API key:
 1. Visit [Google AI Studio](https://aistudio.google.com/app/apikey)
-2. Sign in with your Google account
+2. Sign in with a Google account
 3. Click "Create API Key"
 4. Copy and paste it below
 
-**Note:** Your API key is never stored and only used during this session.
+**Note:** API keys are never stored and only used during the session.
 """)
 
 user_api_key = st.sidebar.text_input(
-    "Enter your Google Gemini API Key:",
+    "Google Gemini API Key:",
     type="password",
     value=os.getenv("GOOGLE_API_KEY", ""),
-    help="Get your free API key at: https://aistudio.google.com/app/apikey"
+    help="Obtain free API key at: https://aistudio.google.com/app/apikey"
 )
 
 if not user_api_key:
@@ -218,7 +218,7 @@ def run_turn(user_question: str) -> None:
     # Fallback if coaching is empty (shouldn't happen with working agent)
     if not answer or answer.strip() == "":
         print("DEBUG: Empty coach response, using FAQ fallback")
-        answer = "(No coaching response available. Please try again or check your image.)"
+        answer = "(No coaching response available. Try again or check the image.)"
 
     try:
         print("DEBUG before append, history len:", len(st.session_state.get("chat_history", [])))
@@ -285,7 +285,7 @@ with col_left:
         # Run initial vision analysis on photo upload if we haven't already
         if st.session_state["last_result"] is None:
             # Show status at the TOP of page using placeholder
-            with status_placeholder.status("🔍 Analyzing your photo...", expanded=True) as status:
+            with status_placeholder.status("🔍 Analyzing photo...", expanded=True) as status:
                 st.write("📤 Step 1/3: Processing image...")
                 
                 # Vision analysis
@@ -367,7 +367,7 @@ with col_right:
             else ""
         )
         question = st.text_area(
-            "✍️ Ask your coach:",
+            "✍️ Ask the coach:",
             value=question_default,
             height=80,
             placeholder="Ask about composition, lighting, ISO, framing...",

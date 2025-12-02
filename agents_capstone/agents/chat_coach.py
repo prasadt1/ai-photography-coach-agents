@@ -53,7 +53,7 @@ Now the user asks: "{user_question}"
 Answer as a friendly coach:
 - Explain what is happening in this photo.
 - Name 1–3 relevant composition or exposure principles.
-- Give 2–3 concrete suggestions the user can try next time.
+- Give 2–3 concrete suggestions to try next time.
 Keep the answer under 200 words.
 """
         return prompt.strip()
