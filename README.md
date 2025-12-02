@@ -1,7 +1,7 @@
 # 📷 AI Photography Coach – Multi-Agent System
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![Gemini](https://img.shields.io/badge/Gemini-1.5%20Flash-orange.svg)](https://ai.google.dev/)
+[![Gemini](https://img.shields.io/badge/Gemini-2.5%20Flash-orange.svg)](https://ai.google.dev/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.30-red.svg)](https://streamlit.io/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](Dockerfile)
@@ -9,6 +9,16 @@
 > **An intelligent, production-ready AI coaching system for photography using Google Gemini's multi-agent architecture.**
 
 Built as part of the **Google AI Agents Intensive Capstone Project** – showcasing real-world application of multi-agent systems, LLM integration, and production-grade engineering.
+
+---
+
+## ⚖️ License & Commercial Use
+
+This project is licensed under the **MIT License** – see [LICENSE](LICENSE) for details.
+
+**Commercial Use Welcome**: This codebase may be used for commercial purposes with proper attribution. The hybrid CASCADE RAG architecture and multi-agent system design represent novel approaches to AI-powered coaching applications.
+
+**Roadmap**: See [COMMERCIALIZATION.md](COMMERCIALIZATION.md) for product development plans and market strategy.
 
 ---
 
