@@ -1,18 +1,20 @@
 # 📷 AI Photography Coach – Google MCP + ADK Capstone Demo
 
 > **Google AI Agents Intensive Capstone Project**  
-> Demonstrating Model Context Protocol (MCP) and Agent Development Kit (ADK) integration
+> Demonstrating Model Context Protocol (MCP) and Agent Development Kit (ADK) readiness
 
 ---
 
 ## 🎯 Capstone Focus
 
-This branch demonstrates a **production-grade multi-agent photography coaching system** built entirely with Google's agent technologies:
+This branch demonstrates a **production-grade multi-agent photography coaching system** built with Google's agent technologies:
 
-- ✅ **MCP Server**: JSON-RPC server exposing photography coaching tools
-- ✅ **ADK Integration**: Vertex AI Agent Builder compatible tools
+- ✅ **MCP Server** (PRIMARY): Full JSON-RPC 2.0 server for Claude Desktop integration
+- ✅ **ADK-Ready Tools**: Vertex AI Agent Builder compatible schemas (awaiting public ADK SDK)
 - ✅ **Multi-Agent Architecture**: Vision Agent + Knowledge Agent + Orchestrator
-- ✅ **Hybrid RAG**: Curated knowledge + FAISS vector search with Gemini grounding
+- ✅ **Hybrid CASCADE RAG**: Novel retrieval architecture combining curated + vector + LLM grounding
+
+**Note:** ADK SDK (`google.adk`) is not yet publicly available. Tools are structured with ADK-compatible schemas ready for deployment once SDK is released.
 
 ---
 
@@ -44,20 +46,22 @@ python3 agents_capstone/tools/mcp_server.py
 # "Analyze this photo for composition issues..."
 ```
 
-### Option 2: ADK Tools (Vertex AI)
+### Option 2: ADK-Ready Tools (Schema Demonstration)
 
 ```bash
 # 1. Set up credentials
 export GOOGLE_API_KEY="your_gemini_api_key"
 
-# 2. Run ADK demo
-python3 agents_capstone/demo_adk.py
+# 2. View ADK-compatible tool definitions
+python3 demo_adk.py
 
-# 3. Follow prompts to:
-#    - Analyze EXIF data
-#    - Get composition feedback
-#    - Receive personalized exercises
+# Shows:
+#    - JSON schemas for Vertex AI Agent Builder
+#    - Tool function signatures
+#    - Ready for ADK SDK once publicly available
 ```
+
+**Note:** Actual ADK deployment requires `google.adk` package (not yet public).
 
 ---
 
