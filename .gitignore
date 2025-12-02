@@ -108,3 +108,7 @@ VIDEO_SLIDES.md
 agents_capstone/data/embeddings.npy
 agents_capstone/data/faiss_index/
 agents_capstone/data/pdfs/
+
+# Internal planning documents
+COMMERCIALIZATION.md
+POST_CAPSTONE_PLAN.md
