@@ -18,9 +18,14 @@ Features:
 import os
 import json
 from typing import Dict, Any
+from dotenv import load_dotenv
 
-# Configure API key
-os.environ['GOOGLE_API_KEY'] = os.getenv('GOOGLE_API_KEY', 'your-api-key-here')
+# Load API key from .env file (never hardcode keys!)
+load_dotenv()
+if not os.getenv('GOOGLE_API_KEY'):
+    print("⚠️  GOOGLE_API_KEY not found in .env file")
+    print("   Add your API key to .env before running this demo")
+    exit(1)
 
 # Import ADK tools
 from agents_capstone.adk_tools import (

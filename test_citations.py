@@ -1,13 +1,16 @@
 """Quick test to verify KnowledgeAgent returns citations"""
 
 import os
-
-# Set up API key
-os.environ['GOOGLE_API_KEY'] = 'AIzaSyBhkZ_krdwjmLISz-xecz7Cmm7eHo6oIAc'
-
-# Import and configure
+from dotenv import load_dotenv
 import google.generativeai as genai
-genai.configure(api_key=os.environ['GOOGLE_API_KEY'])
+
+# Load API key from .env file (never hardcode keys!)
+load_dotenv()
+api_key = os.getenv('GOOGLE_API_KEY')
+if not api_key:
+    raise ValueError("GOOGLE_API_KEY not found in environment. Add to .env file.")
+
+genai.configure(api_key=api_key)
 
 # Import the agent
 from agents_capstone.agents.knowledge_agent import KnowledgeAgent
