@@ -238,6 +238,13 @@ def run_turn(user_question: str) -> None:
 
 # ---------- UI LAYOUT ----------
 
+# Progress indicator at top (above columns) - visible regardless of scroll position
+if "analyzing" in st.session_state and st.session_state["analyzing"]:
+    with st.status("🔍 Analyzing your photo...", expanded=True) as status:
+        st.write("📸 Extracting EXIF data...")
+        st.write("🎨 Analyzing composition with Gemini Vision...")
+        st.write("💬 Preparing coaching interface...")
+
 col_left, col_right = st.columns([1.1, 1.4])
 
 with col_left:
@@ -246,24 +253,23 @@ with col_left:
                                  help="Analysis takes ~5-10 seconds on first upload")
 
     if uploaded is not None:
-        # Show upload progress
-        with st.spinner("📤 Processing image..."):
-            img = Image.open(uploaded).convert("RGB")
-            
-            tmp_path = "tmp_uploaded.jpg"
-            # Save the image while preserving EXIF data
-            try:
-                if hasattr(uploaded, 'read'):
-                    # Save original bytes directly to preserve EXIF
-                    with open(tmp_path, "wb") as f:
-                        f.write(uploaded.getbuffer())
-                else:
-                    img.save(tmp_path, format="JPEG")
-            except Exception:
-                # Fallback to simple save
-                img.save(tmp_path, format="JPEG")
+        # Process image upload
+        img = Image.open(uploaded).convert("RGB")
         
-        # Display image after processing
+        tmp_path = "tmp_uploaded.jpg"
+        # Save the image while preserving EXIF data
+        try:
+            if hasattr(uploaded, 'read'):
+                # Save original bytes directly to preserve EXIF
+                with open(tmp_path, "wb") as f:
+                    f.write(uploaded.getbuffer())
+            else:
+                img.save(tmp_path, format="JPEG")
+        except Exception:
+            # Fallback to simple save
+            img.save(tmp_path, format="JPEG")
+        
+        # Display image
         st.image(img, caption="Current photo", use_column_width=True)
         
         # Only reset history if a NEW image is being uploaded
@@ -282,44 +288,30 @@ with col_left:
         
         # Run initial vision analysis on photo upload if we haven't already
         if st.session_state["last_result"] is None:
-            # Show detailed progress indicator during analysis
-            progress_text = st.empty()
-            progress_bar = st.progress(0)
-            
-            try:
-                # Step 1: Vision analysis
-                progress_text.text("🔍 Step 1/3: Analyzing composition with Gemini Vision...")
-                progress_bar.progress(33)
+            # Use status widget at top of page for better visibility
+            with st.status("🔍 Analyzing your photo...", expanded=True) as status:
+                st.write("📤 Step 1/3: Processing image...")
                 
-                base = orchestrator.run(
-                    user_id="streamlit_user",
-                    image_path=st.session_state["image_path"],
-                    query="Analyze this photo",
-                )
+                # Vision analysis
+                st.write("🎨 Step 2/3: Analyzing composition with Gemini Vision...")
                 
-                # Step 2: EXIF extraction
-                progress_text.text("📸 Step 2/3: Extracting camera settings (EXIF)...")
-                progress_bar.progress(66)
-                
-                st.session_state["last_result"] = base
-                
-                # Step 3: Complete
-                progress_text.text("✅ Step 3/3: Loading coaching interface...")
-                progress_bar.progress(100)
-                
-                # Clear progress indicators after brief delay
-                import time
-                time.sleep(0.5)
-                progress_text.empty()
-                progress_bar.empty()
-                
-                # Show success message
-                st.success("✅ Photo analyzed! Ready to coach.", icon="✅")
-                
-            except Exception as e:
-                progress_text.empty()
-                progress_bar.empty()
-                st.error(f"❌ Error analyzing photo: {e}")
+                try:
+                    base = orchestrator.run(
+                        user_id="streamlit_user",
+                        image_path=st.session_state["image_path"],
+                        query="Analyze this photo",
+                    )
+                    
+                    st.session_state["last_result"] = base
+                    
+                    # Complete
+                    st.write("✅ Step 3/3: Extracting camera settings (EXIF)...")
+                    
+                    status.update(label="✅ Analysis complete!", state="complete", expanded=False)
+                    
+                except Exception as e:
+                    status.update(label="❌ Analysis failed", state="error", expanded=False)
+                    st.error(f"Error analyzing photo: {e}")
         
         # Show analysis results if available
         if st.session_state["last_result"]:
