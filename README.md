@@ -41,16 +41,21 @@ This shows all three deployment platforms in a single run:
 
 ---
 
-## 📊 Architecture Diagrams
+## 📊 System Architecture
 
-Professional visual diagrams are available in [`assets/diagrams/`](assets/diagrams/):
+### Agent Coordination Pattern
 
-- **Agent Coordination Pattern** - Mediated communication via Orchestrator (ADK native approach, not formal A2A Protocol)
-- **Multi-Platform Architecture** - Shared agents across 3 deployment platforms
-- **Hybrid RAG CASCADE** - Three-tier retrieval (Curated → FAISS → Gemini Grounding)
-- **Agent Hierarchy** - Complete parent/sub-agent pattern with data structures
+The system uses **ADK's native parent/sub-agent coordination** (not the formal [A2A Protocol](https://a2aproject.github.io/A2A/)). The Orchestrator mediates all communication between sub-agents:
 
-> **Note**: These diagrams provide detailed visual representations of the architecture described in the sections below. The coordination pattern follows ADK best practices, not the formal [A2A Protocol](https://a2aproject.github.io/A2A/).
+![Agent Coordination Pattern](assets/diagrams/agent_coordination_pattern.png)
+
+### Additional Architecture Diagrams
+
+Complete visual documentation available in [`assets/diagrams/`](assets/diagrams/):
+
+- **[Multi-Platform Architecture](assets/diagrams/multi_platform_architecture.png)** - Shared agents across ADK Runner, MCP Server, Python API
+- **[Hybrid RAG CASCADE](assets/diagrams/hybrid_rag_cascade.png)** - Three-tier retrieval (Curated → FAISS → Gemini Grounding)
+- **[Agent Hierarchy Detailed](assets/diagrams/agent_hierarchy_detailed.png)** - Parent/sub-agent pattern with data structures
 
 ---
 
