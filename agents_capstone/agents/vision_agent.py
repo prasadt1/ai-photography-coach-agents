@@ -63,9 +63,7 @@ class VisionAgent:
         """Lazy-load Gemini Vision model."""
         if self.model is None:
             try:
-                # Use Gemini 2.5 Flash - latest stable model with vision capabilities
                 self.model = genai.GenerativeModel("gemini-2.5-flash")
-                print("✅ Initialized Gemini 2.5 Flash model for vision analysis")
             except Exception as e:
                 print(f"⚠️  Warning: Could not initialize Gemini model: {e}")
                 print("   Falling back to rule-based analysis")
@@ -100,17 +98,15 @@ class VisionAgent:
             
             prompt = f"""You are an expert photography coach analyzing a photo for a {skill_level} photographer.
 
-First, describe what you see in 2-3 sentences with engaging, natural language - mention the subject, setting, mood, and overall impression.
+Analyze this image and provide feedback in JSON format with these fields:
 
-Then analyze this image and provide feedback in JSON format with these fields:
-
-1. "composition_summary": Your 2-3 sentence natural, descriptive summary (e.g., "A beautiful portrait of a bicycle against a weathered urban background with vibrant flowers in the foreground. The subject fills the frame well, creating an intimate feel. Natural lighting creates soft shadows that add depth.")
-2. "detected_issues": Array of issues based on what you ACTUALLY see, each with:
+1. "composition_summary": A 2-3 sentence natural language summary of the composition
+2. "detected_issues": Array of issues, each with:
    - "type": Short identifier (e.g., "subject_centered", "horizon_tilt", "cluttered_background", "weak_focal_point")
    - "severity": "low", "medium", or "high"
    - "description": What the issue is
    - "suggestion": How to fix it
-3. "strengths": Array of positive aspects you observe (e.g., "good_lighting", "sharp_focus", "strong_leading_lines", "effective_depth_of_field", "natural_colors")
+3. "strengths": Array of positive aspects (e.g., "good_lighting", "sharp_focus", "strong_leading_lines", "effective_depth_of_field")
 
 Focus on:
 - Actual composition (rule of thirds, leading lines, balance, framing)
@@ -118,17 +114,14 @@ Focus on:
 - Background and foreground elements
 - Lighting and exposure
 - Technical quality (sharpness, noise)
-- Colors, textures, and visual interest
 {exif_context}
-Provide ONLY valid JSON, no markdown formatting. Be specific and descriptive about what you actually see in the image."""
+Provide ONLY valid JSON, no markdown formatting."""
             
             # Call Gemini Vision
             response = model.generate_content([prompt, img])
             
             # Parse JSON response
             response_text = response.text.strip()
-            print(f"DEBUG: Gemini Vision raw response preview: {response_text[:200]}...")
-            
             # Remove markdown code blocks if present
             if response_text.startswith("```json"):
                 response_text = response_text[7:]
@@ -139,12 +132,10 @@ Provide ONLY valid JSON, no markdown formatting. Be specific and descriptive abo
             response_text = response_text.strip()
             
             analysis = json.loads(response_text)
-            print(f"DEBUG: Successfully parsed Gemini Vision analysis with {len(analysis.get('detected_issues', []))} issues")
             return analysis
             
         except Exception as e:
-            print(f"⚠️  Gemini Vision analysis failed: {type(e).__name__}: {e}")
-            print(f"   Response text preview: {response_text[:300] if 'response_text' in locals() else 'N/A'}")
+            print(f"⚠️  Gemini Vision analysis failed: {e}")
             print("   Falling back to rule-based analysis")
             return self._fallback_analysis(exif)
     
