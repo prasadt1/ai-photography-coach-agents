@@ -66,30 +66,6 @@ See the system in action:
 
 ---
 
-- [🎯 What It Does](#-what-it-does)
-- [🎥 Demo](#-demo)
-- [⭐ Key Features](#-key-features)
-- [🎯 Project Overview](#-project-overview)
-- [🚀 Quick Start](#-quick-start)
-- [📋 Platform-Specific Usage](#-platform-specific-usage)
-- [🏗️ System Architecture](#️-system-architecture)
-  - [1. Agent Coordination Pattern](#1-agent-coordination-pattern)
-  - [2. Agent Hierarchy](#2-agent-hierarchy-adk-pattern)
-  - [3. Multi-Platform Deployment](#3-multi-platform-deployment)
-  - [4. Hybrid RAG CASCADE](#4-hybrid-rag-cascade)
-  - [5. Agent Communication Patterns](#5-agent-communication-patterns)
-  - [6. Complete Data Flow Example](#6-complete-data-flow-example)
-- [🔄 Session Management & State Persistence](#-session-management--state-persistence)
-- [🎓 Capstone Requirements Met](#-capstone-requirements-met)
-- [📁 Project Structure](#-project-structure)
-- [🧪 Evaluation & Testing](#-evaluation--testing)
-- [🔧 Technical Implementation](#-technical-implementation)
-- [📖 Documentation](#-documentation)
-- [🎯 Key Innovations](#-key-innovations)
-- [🏆 Capstone Submission](#-capstone-submission)
-
----
-
 ## ⭐ Key Features
 
 ### 🤖 Multi-Agent Architecture
