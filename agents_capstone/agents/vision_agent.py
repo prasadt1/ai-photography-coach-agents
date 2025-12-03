@@ -63,7 +63,9 @@ class VisionAgent:
         """Lazy-load Gemini Vision model."""
         if self.model is None:
             try:
+                # Use Gemini 2.5 Flash - latest stable model with vision capabilities
                 self.model = genai.GenerativeModel("gemini-2.5-flash")
+                print("✅ Initialized Gemini 2.5 Flash model for vision analysis")
             except Exception as e:
                 print(f"⚠️  Warning: Could not initialize Gemini model: {e}")
                 print("   Falling back to rule-based analysis")
