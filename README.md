@@ -5,6 +5,29 @@
 
 ---
 
+## 📑 Table of Contents
+
+- [🎯 Project Overview](#-project-overview)
+- [🚀 Quick Start](#-quick-start)
+- [📋 Platform-Specific Usage](#-platform-specific-usage)
+- [🏗️ System Architecture](#️-system-architecture)
+  - [1. Agent Coordination Pattern](#1-agent-coordination-pattern)
+  - [2. Agent Hierarchy](#2-agent-hierarchy-adk-pattern)
+  - [3. Multi-Platform Deployment](#3-multi-platform-deployment)
+  - [4. Hybrid RAG CASCADE](#4-hybrid-rag-cascade)
+  - [5. Agent Communication Patterns](#5-agent-communication-patterns)
+  - [6. Complete Data Flow Example](#6-complete-data-flow-example)
+- [🔄 Session Management & State Persistence](#-session-management--state-persistence)
+- [🎓 Capstone Requirements Met](#-capstone-requirements-met)
+- [📁 Project Structure](#-project-structure)
+- [🧪 Evaluation & Testing](#-evaluation--testing)
+- [🔧 Technical Implementation](#-technical-implementation)
+- [📖 Documentation](#-documentation)
+- [🎯 Key Innovations](#-key-innovations)
+- [🏆 Capstone Submission](#-capstone-submission)
+
+---
+
 ## 🎯 Project Overview
 
 A **multi-agent photography coaching system** built with Google's agent technologies, demonstrating architectural reusability through three deployment platforms:
@@ -829,44 +852,157 @@ This score represents **production-ready quality** across:
 
 ## 🔧 Technical Implementation
 
-### Multi-Agent Coordination
-```python
-orchestrator = Orchestrator(
-    vision_agent=VisionAgent(),
-    knowledge_agent=KnowledgeAgent()
-)
+### Core Technologies
 
-result = orchestrator.process(
-    user_query="How to improve composition?",
-    image_path="photo.jpg",
-    session={"history": []}
-)
+| Component | Technology | Purpose |
+|-----------|-----------|---------|
+| **LLM** | Gemini 2.5 Flash | Vision analysis + coaching generation |
+| **Embeddings** | text-embedding-004 | RAG retrieval (768 dimensions) |
+| **Vector Store** | FAISS (IndexFlatIP) | Fast similarity search (1000+ documents) |
+| **Metadata** | Pillow + PIL.ExifTags | Camera settings extraction |
+| **Sessions** | SQLite + ADK adapter | Persistent state management |
+| **API** | google.generativeai | Gemini SDK (1.19.0) |
+
+### Key Implementation Details
+
+**1. EXIF Extraction Pipeline**
+```python
+# agents/vision_agent.py
+from PIL import Image
+from PIL.ExifTags import TAGS
+
+def _extract_exif(self, image_path: str) -> dict:
+    img = Image.open(image_path)
+    exif_data = img._getexif() or {}
+    
+    # Decode EXIF tag IDs to readable names
+    decoded = {TAGS.get(k, k): v for k, v in exif_data.items()}
+    
+    # Extract critical settings
+    return {
+        "camera": decoded.get("Model", "Unknown"),
+        "lens": decoded.get("LensModel", "Unknown"),
+        "iso": decoded.get("ISOSpeedRatings", "Unknown"),
+        "aperture": decoded.get("FNumber", "Unknown"),
+        "shutter": decoded.get("ExposureTime", "Unknown"),
+        "focal_length": decoded.get("FocalLength", "Unknown")
+    }
 ```
 
-### ADK Runner Integration
+**2. Structured Agent Outputs (Type Safety)**
 ```python
-from google.adk.agents import LlmAgent
-from google.adk.runners import Runner
-from google.adk.sessions import InMemorySessionService
+# agents/vision_agent.py
+@dataclass
+class Issue:
+    type: str           # "exposure", "composition", "focus", etc.
+    severity: str       # "low", "medium", "high"
+    description: str    # Human-readable explanation
+    suggestion: str     # Actionable fix
 
-agent = LlmAgent(model="gemini-2.5-flash", name="PhotoCoach")
-runner = Runner(agent=agent, session_service=session_service)
-
-async for event in runner.run_async(user_id, session_id, new_message):
-    if event.content:
-        print(event.content.parts[0].text)
+@dataclass
+class VisionAnalysis:
+    exif: dict
+    composition_summary: str
+    detected_issues: List[Issue]
+    strengths: List[str]
 ```
 
-### MCP Server Protocol
+**3. RAG Embedding Cache**
+```python
+# tools/knowledge_base.py
+EMBEDDING_CACHE_FILE = "data/embeddings_cache.pkl"
+
+def get_embeddings(texts: List[str]) -> np.ndarray:
+    # Load cache if exists (avoids API calls)
+    if os.path.exists(EMBEDDING_CACHE_FILE):
+        return pickle.load(open(EMBEDDING_CACHE_FILE, "rb"))
+    
+    # Generate embeddings (one-time cost)
+    embeddings = [genai.embed_content(text=t, task_type="retrieval_document")
+                  for t in texts]
+    
+    # Cache for future runs
+    pickle.dump(embeddings, open(EMBEDDING_CACHE_FILE, "wb"))
+    return embeddings
+```
+
+**4. Error Handling Strategy**
+```python
+# agents/knowledge_agent.py
+def coach(self, query: str, vision_analysis: Optional[VisionAnalysis]) -> CoachingResponse:
+    try:
+        # Primary: RAG retrieval
+        principles = self.rag.retrieve(query)
+    except Exception as e:
+        logger.warning(f"RAG failed: {e}, using fallback")
+        # Fallback: Zero-shot generation
+        principles = ["[No knowledge base results]"]
+    
+    try:
+        # Generate coaching with Gemini
+        response = genai.generate_content(prompt)
+    except Exception as e:
+        logger.error(f"Gemini API failed: {e}")
+        # Graceful degradation
+        return CoachingResponse(
+            text="Service temporarily unavailable. Please try again.",
+            principles=[],
+            issues=[],
+            exercise=""
+        )
+```
+
+**5. Context Compaction Algorithm**
+```python
+# tools/context.py
+def compact_context(history: List[Dict], max_sentences: int = 3) -> str:
+    # Keep last 3 turns verbatim (recency bias)
+    recent = history[-6:]  # 3 user + 3 assistant messages
+    
+    # Extract key phrases from assistant responses
+    summaries = []
+    for msg in recent:
+        if msg.get("role") == "assistant":
+            # Take first N sentences (main points)
+            sentences = msg["content"].split('. ')[:max_sentences]
+            summaries.extend(sentences)
+    
+    return " ".join(summaries[:max_sentences])  # Cap total length
+```
+
+**6. ADK Cloud Memory Adapter Pattern**
+```python
+# tools/adk_adapter.py
+def set_value(user_id: str, key: str, value: Any):
+    """Transparent storage abstraction"""
+    if ADK_AVAILABLE:
+        # Production: Use ADK cloud storage
+        from google.adk.sessions import InMemorySessionService
+        session_service.set(user_id, key, value)
+    else:
+        # Development: Use SQLite fallback
+        import sqlite3
+        conn = sqlite3.connect("sessions.db")
+        conn.execute("INSERT OR REPLACE INTO sessions VALUES (?, ?, ?)",
+                     (user_id, key, json.dumps(value)))
+```
+
+### Platform Deployment Wrappers
+
+**ADK Runner** (`adk_runner.py`)
+- Wraps agents as `LlmAgent` tools
+- Async event streaming with `Runner`
+- Cloud-ready with `InMemorySessionService`
+
+**MCP Server** (`tools/mcp_server.py`)
 - JSON-RPC 2.0 over stdio transport
 - Three tools: `analyze_photo`, `coach_on_photo`, `get_session_history`
-- Full error handling and progress notifications
 - Claude Desktop compatible
 
-### Hybrid CASCADE RAG
-1. **Primary**: Curated knowledge (NumPy similarity, threshold 0.6)
-2. **Secondary**: FAISS vector store (1000+ chunks, broader coverage)
-3. **Grounding**: Gemini adds structured citations
+**Python API**
+- Direct class imports (`from agents_capstone.agents import ...`)
+- Synchronous method calls
+- Ideal for notebooks and custom integrations
 
 ---
 
