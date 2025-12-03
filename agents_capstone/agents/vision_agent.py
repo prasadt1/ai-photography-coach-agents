@@ -118,7 +118,7 @@ Focus on:
 - Technical quality (sharpness, noise)
 - Colors, textures, and visual interest
 {exif_context}
-Provide ONLY valid JSON, no markdown formatting. Be specific and descriptive about what you actually see in the image.
+Provide ONLY valid JSON, no markdown formatting. Be specific and descriptive about what you actually see in the image."""
             
             # Call Gemini Vision
             response = model.generate_content([prompt, img])
