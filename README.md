@@ -248,42 +248,6 @@ The system implements **mediated agent coordination** through the Orchestrator, 
 
 > **Note:** This project uses **ADK's native agent coordination patterns** (parent/sub-agent hierarchy). We are aware of the formal [**A2A Protocol**](https://a2aproject.github.io/A2A/) (Agent-to-Agent communication standard from The Linux Foundation), but our current implementation follows ADK's coordination approach rather than implementing the A2A protocol specification. The A2A Protocol defines standardized APIs (`sendMessage`, `sendMessageStream`, agent discovery via agent cards) for cross-framework agent interoperability. Future versions could adopt A2A to enable collaboration with agents from other frameworks (LangGraph, Crew AI, etc.).
 
-#### Communication Flow
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│              MEDIATED AGENT COORDINATION FLOW                    │
-└─────────────────────────────────────────────────────────────────┘
-
-1. VisionAgent → Orchestrator
-   ┌────────────────────────────────────────────────────────┐
-   │ VisionAgent.analyze()                                  │
-   │   Input:  image_path, skill_level                      │
-   │   Output: VisionAnalysis (dataclass)                   │
-   │           • exif: Dict                                 │
-   │           • composition_summary: str                   │
-   │           • detected_issues: List[DetectedIssue]       │
-   │           • strengths: List[str]                       │
-   └─────────────────────┬──────────────────────────────────┘
-                         ↓
-                    Orchestrator stores result
-                         ↓
-2. Orchestrator → KnowledgeAgent (with VisionAgent output)
-   ┌────────────────────────────────────────────────────────┐
-   │ KnowledgeAgent.coach()                                 │
-   │   Input:  query: str                                   │
-   │           vision_analysis: VisionAnalysis ← From A1    │
-   │           session: dict (history + context)            │
-   │   Output: CoachingResponse (dataclass)                 │
-   │           • text: str (LLM-generated advice)           │
-   │           • principles: List[Principle]                │
-   │           • issues: List[str] ← Inherited from A1      │
-   │           • exercise: str                              │
-   └────────────────────────────────────────────────────────┘
-
-Key Pattern: Orchestrator mediates - VisionAgent's output becomes KnowledgeAgent's input
-```
-
 #### Agent Communication Patterns
 
 **1. Sequential Coordination (Vision → Knowledge)**
@@ -669,34 +633,6 @@ final_response = {
 - Citation-backed advice from knowledge base
 - Practice exercise generation
 - Session history awareness
-
-### Deployment Architecture (3 Platforms)
-
-The **same agent hierarchy** (Orchestrator → Vision + Knowledge) deploys across three platforms:
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                     CORE AGENTS (Shared)                        │
-│                                                                 │
-│  Orchestrator ────┬──→ VisionAgent (Gemini Vision)            │
-│                   └──→ KnowledgeAgent (Gemini + RAG)           │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-        ┌─────────────────────┼─────────────────────┐
-        ↓                     ↓                     ↓
-┌───────────────┐   ┌──────────────────┐   ┌──────────────────┐
-│  ADK RUNNER   │   │   MCP SERVER     │   │   PYTHON API     │
-│  (Cloud)      │   │   (Desktop)      │   │   (Custom)       │
-├───────────────┤   ├──────────────────┤   ├──────────────────┤
-│ LlmAgent      │   │ JSON-RPC 2.0     │   │ Direct imports   │
-│ Runner        │   │ stdio transport  │   │ function calls   │
-│ Sessions      │   │ 3 tools exposed  │   │                  │
-│               │   │                  │   │                  │
-│ Deploy:       │   │ Deploy:          │   │ Deploy:          │
-│ Vertex AI     │   │ Claude Desktop   │   │ Notebooks        │
-│ Cloud Run     │   │ Local machine    │   │ Custom apps      │
-└───────────────┘   └──────────────────┘   └──────────────────┘
-```
 
 ### Platform Comparison
 
