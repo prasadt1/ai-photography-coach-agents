@@ -304,9 +304,7 @@ with col_left:
                 vision_agent.model = None  # Clear cached model
                 genai.configure(api_key=user_api_key)  # Reconfigure API
             except Exception as e:
-                st.warning(f"⚠️ Model reset: {e}")
-            # Force fresh analysis by clearing any cached agents
-            st.cache_resource.clear()
+                pass  # Silent fail - don't show warning to users
         else:
             st.session_state["image_path"] = tmp_path
         
