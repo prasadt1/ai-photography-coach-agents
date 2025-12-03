@@ -228,7 +228,7 @@ This hierarchy mirrors Google's recommended pattern: **one coordinator (Orchestr
 
 The system implements **mediated agent coordination** through the Orchestrator, following the **Mediator Pattern**.
 
-> **Note:** This is NOT an implementation of a formal "Google A2A Protocol" (if such a standardized specification exists). Instead, we follow **ADK agent coordination best practices**: parent agent (Orchestrator) coordinates specialized sub-agents (Vision, Knowledge) through structured data passing. The term "A2A" here refers to general agent-to-agent communication patterns, not a specific protocol.
+> **Note:** This project uses **ADK's native agent coordination patterns** (parent/sub-agent hierarchy). We are aware of the formal [**A2A Protocol**](https://a2aproject.github.io/A2A/) (Agent-to-Agent communication standard from The Linux Foundation), but our current implementation follows ADK's coordination approach rather than implementing the A2A protocol specification. The A2A Protocol defines standardized APIs (`sendMessage`, `sendMessageStream`, agent discovery via agent cards) for cross-framework agent interoperability. Future versions could adopt A2A to enable collaboration with agents from other frameworks (LangGraph, Crew AI, etc.).
 
 #### Communication Flow
 
