@@ -228,13 +228,17 @@ This implementation follows **ADK agent hierarchy** principles with a **coordina
 
 This hierarchy mirrors Google's recommended pattern: **one coordinator (Orchestrator) managing specialized workers (Vision, Knowledge)**.
 
-### Additional Architecture Diagrams
+### Multi-Platform Deployment
 
-Comprehensive visual documentation in [`assets/diagrams/`](assets/diagrams/):
+![Multi-Platform Architecture](assets/diagrams/multi_platform_architecture.png)
 
-- **[Multi-Platform Architecture](assets/diagrams/multi_platform_architecture.png)** - Shared agents across ADK Runner, MCP Server, Python API
-- **[Hybrid RAG CASCADE](assets/diagrams/hybrid_rag_cascade.png)** - Three-tier retrieval (Curated → FAISS → Gemini Grounding)
-- **[Agent Hierarchy Detailed](assets/diagrams/agent_hierarchy_detailed.png)** - Parent/sub-agent pattern with complete data structures
+### Hybrid RAG CASCADE
+
+![Hybrid RAG CASCADE](assets/diagrams/hybrid_rag_cascade.png)
+
+### Agent Hierarchy with Data Structures
+
+![Agent Hierarchy Detailed](assets/diagrams/agent_hierarchy_detailed.png)
 
 ---
 
@@ -434,37 +438,10 @@ if len(session.get("history", [])) > 6:
 ```
 
 **Compaction Algorithm:**
-```
-┌──────────────────────────────────────────────────────────┐
-│           CONTEXT COMPACTION STRATEGY                    │
-└──────────────────────────────────────────────────────────┘
 
-Original History (10 turns):
-Turn 1: "Analyze this landscape"          }
-Turn 2: "How to improve horizon?"         }  COMPACT
-Turn 3: "What's rule of thirds?"          }  → Summary
-Turn 4: "Why is it overexposed?"          }
-Turn 5: "Suggestions for composition?"    }
-Turn 6: "How to use leading lines?"       }
-                                           
-Turn 7: "What about this new photo?"      }  KEEP
-Turn 8: "Golden hour lighting tips?"      }  VERBATIM
-Turn 9: "How to shoot portraits?"         }  (Most relevant)
+The system keeps the last 3 conversation turns verbatim (most relevant), and compacts earlier turns into a summary by extracting key phrases from assistant responses and preserving user intent patterns.
 
-Compaction Process:
-1. Keep last 3 turns verbatim (most relevant context)
-2. Extract key phrases from earlier turns
-3. Summarize assistant responses (most informative)
-4. Preserve user intents (question patterns)
-
-Result:
-compact_summary: "User asked about landscape composition, 
-                  horizon placement, exposure issues. Coach 
-                  explained rule of thirds, leading lines."
-recent_history: [Turn 7, Turn 8, Turn 9]  # Full detail
-
-Token Savings: 10,000 tokens → 2,500 tokens (75% reduction)
-```
+**Result:** 75% token reduction (10,000 tokens → 2,500 tokens) while maintaining conversation context.
 
 **Compaction Code Flow:**
 ```python
@@ -503,35 +480,11 @@ def llm_compact_context(history: List[Dict]) -> str:
 #### Solution 2: Persistent Session Management
 
 **Multi-Layer Session Architecture:**
-```
-┌──────────────────────────────────────────────────────────┐
-│                SESSION MANAGEMENT LAYERS                  │
-└──────────────────────────────────────────────────────────┘
 
-Layer 1: In-Memory Store (Fast Access)
-   SESSION_STORE = {
-       "user123": {
-           "skill_level": "intermediate",
-           "history": [...],
-           "compact_summary": "..."
-       }
-   }
-   ↓ Synchronized via ↓
-
-Layer 2: SQLite Persistence (Survives Restarts)
-   Table: key_value_store
-   | user_id  | key      | value (JSON)              |
-   |----------|----------|---------------------------|
-   | user123  | session  | {"skill_level": "inter... |
-   
-   ↓ Adapter Pattern (ADK-Ready) ↓
-
-Layer 3: Cloud Storage (Production)
-   Google Cloud ADK Memory Store (when deployed)
-   - Distributed across regions
-   - Auto-scaling
-   - Shared across ADK Runner instances
-```
+The system uses a 3-layer session management approach:
+- **Layer 1**: In-memory store (fast access during requests)
+- **Layer 2**: SQLite persistence (survives app restarts)
+- **Layer 3**: Cloud storage via ADK adapter (production-ready with auto-scaling)
 
 **Session Lifecycle:**
 
