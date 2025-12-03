@@ -66,20 +66,19 @@
 - [x] Structured logging (JSON format)
 - [x] Agent call traces (VisionAgent, KnowledgeAgent)
 - [x] Latency tracking
-- [x] Metrics (call count, error count, avg latency)
-- [x] Debug panel in UI
+- [x] Metrics tracking capability
 - [x] LLM-as-Judge evaluation (4 dimensions)
 - [x] Heuristic scoring (length, technical terms)
-- [x] Evaluation reports (JSON, CSV, HTML)
+- [x] Evaluation harness (demo_eval.py)
 
 ### ✅ Day 5: Prototype to Production
-- [x] Local Streamlit deployment
 - [x] Docker containerization
 - [x] Pinned dependencies (requirements.txt)
 - [x] Reproducible environment
-- [x] Smoke test script (docker_build_and_run.sh)
+- [x] Multi-platform deployment (ADK + MCP + Python API)
 - [x] Scalability planning (ADK adapter)
-- [x] A2A Protocol readiness (documented roadmap)
+- [x] Production-ready MCP server
+- [x] Real ADK integration (google-adk==1.19.0)
 
 ---
 
@@ -122,13 +121,11 @@ docker build -t photo-coach:latest .
 ## Documentation Map
 
 | Document | Size | Purpose | Key Sections |
-|----------|------|---------|--------------|
+|----------|------|---------|------------|
+| README.md | 1000 L | Main project doc | Architecture, deployment, evaluation |
 | WRITEUP.md | 400 L | Rubric mapping | Feature matrix, file pointers, verification |
-| ADK_INTEGRATION.md | 300 L | ADK guide | Day 1-5 alignment, setup, extensions |
-| OBSERVABILITY.md | 250 L | Logs/metrics | Logs format, traces, metrics, debugging |
-| DEMO_OUTLINE.md | 200 L | Demo script | 5-min walkthrough, video shots, talking points |
-| SUBMISSION_README.md | 200 L | Quick start | Installation, rubric coverage, run instructions |
-| COMPLETION_SUMMARY.md | 150 L | What was done | Accomplishments, verification, highlights |
+| ADK_INTEGRATION.md | 300 L | ADK guide | Real implementation, 3-platform architecture |
+| OBSERVABILITY.md | 250 L | Logs/metrics | Structured logging, monitoring approach |
 | DELIVERABLES.md | This file | Checklist | All artifacts, features, verification |
 
 ---
@@ -173,14 +170,14 @@ docker build -t photo-coach:latest .
 
 | Metric | Value |
 |--------|-------|
-| Source Files | 12 |
+| Source Files | ~30 |
 | Lines of Code | ~2000 |
 | Documentation Lines | ~1500 |
-| Agents | 2 (Vision, Knowledge) |
-| Tools | 4 (EXIF, KB, Memory, Context) |
-| Frameworks | Streamlit, Gemini, SQLite |
-| Deployment Options | Streamlit, Docker, Vertex AI (optional) |
-| Test Coverage | Demo notebook + evaluation harness |
+| Agents | 3 (Orchestrator, Vision, Knowledge) |
+| Tools | 8 (MCP, ADK, RAG, EXIF, KB, Memory, Context, FAISS) |
+| Frameworks | Gemini, SQLite, FAISS |
+| Deployment Options | ADK Runner, MCP Server, Python API, Docker |
+| Evaluation | LLM-as-Judge harness (8.58/10) |
 
 ---
 
