@@ -285,12 +285,7 @@ with col_left:
         # Run initial vision analysis on photo upload if we haven't already
         if st.session_state["last_result"] is None:
             # Show status at the TOP of page using placeholder
-            with status_placeholder.status("🔍 Analyzing photo...", expanded=True) as status:
-                st.write("📤 Step 1/3: Processing image...")
-                
-                # Vision analysis
-                st.write("🎨 Step 2/3: Analyzing composition with Gemini Vision...")
-                
+            with status_placeholder.status("🔍 Analyzing photo...", expanded=False) as status:
                 try:
                     base = orchestrator.run(
                         user_id="streamlit_user",
@@ -299,10 +294,6 @@ with col_left:
                     )
                     
                     st.session_state["last_result"] = base
-                    
-                    # Complete
-                    st.write("✅ Step 3/3: Extracting camera settings (EXIF)...")
-                    
                     status.update(label="✅ Analysis complete!", state="complete", expanded=False)
                     
                 except Exception as e:
