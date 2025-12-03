@@ -111,7 +111,7 @@ SQLite backend with ADK adapter enables 50+ turn conversations. Recent 3 turns p
 
 ## Demo
 
-**🚀 Try it Live:** https://ai-photography-coach.streamlit.app
+**🚀 Try it Live:** https://ai-agentic-photography-coach.streamlit.app
 
 **Live Demo Flow:**
 
