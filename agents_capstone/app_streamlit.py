@@ -274,12 +274,14 @@ with col_left:
         # Display image
         st.image(img, caption="Current photo", use_column_width=True)
         
-        # Only reset history if a NEW image is being uploaded
+        # Always reset for new image (force fresh analysis)
         if st.session_state["last_uploaded_path"] != uploaded.name:
             st.session_state["image_path"] = tmp_path
             st.session_state["chat_history"] = []
             st.session_state["last_result"] = None
             st.session_state["last_uploaded_path"] = uploaded.name
+            # Force fresh analysis by clearing any cached agents
+            st.cache_resource.clear()
         else:
             st.session_state["image_path"] = tmp_path
         
@@ -293,11 +295,18 @@ with col_left:
             # Show status at the TOP of page using placeholder
             with status_placeholder.status("🔍 Analyzing photo...", expanded=False) as status:
                 try:
+                    # Debug: Check if model is initialized correctly
+                    print(f"DEBUG: VisionAgent model: {orchestrator.vision_agent.model}")
+                    
                     base = orchestrator.run(
                         user_id="streamlit_user",
                         image_path=st.session_state["image_path"],
                         query="Analyze this photo",
                     )
+                    
+                    # Debug: Check what we got back
+                    if base and base.get("vision"):
+                        print(f"DEBUG: Vision summary: {base['vision'].get('composition_summary', 'NONE')[:100]}")
                     
                     st.session_state["last_result"] = base
                     status.update(label="✅ Analysis complete!", state="complete", expanded=False)
@@ -305,6 +314,8 @@ with col_left:
                 except Exception as e:
                     status.update(label="❌ Analysis failed", state="error", expanded=False)
                     st.error(f"Error analyzing photo: {e}")
+                    import traceback
+                    print(f"DEBUG: Full error: {traceback.format_exc()}")
         
         # Show analysis results if available
         if st.session_state["last_result"]:
