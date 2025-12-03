@@ -654,24 +654,10 @@ final_response = {
 
 Novel retrieval architecture combining reliability with flexibility:
 
-```
-Query → Agentic RAG (Gemini creativity)
-         ↓
-    1. Primary: Curated Knowledge (20 entries)
-       - NumPy similarity search
-       - Threshold: 0.6
-       - Fast, high-quality
-         ↓
-    2. Secondary: FAISS Fallback (1000+ entries)
-       - Vector search
-       - Broader coverage
-       - Deployed when needed
-         ↓
-    3. Grounding: Gemini adds citations
-       - "📚 Supporting Resources"
-       - Source attribution
-       - Builds trust
-```
+**Three-Tier Cascade:**
+1. **Primary: Curated Knowledge** (20 entries) - NumPy similarity search with 0.6 threshold for fast, high-quality results
+2. **Secondary: FAISS Fallback** (1000+ entries) - Vector search for broader coverage when curated knowledge insufficient
+3. **Grounding: Gemini Citations** - Adds "📚 Supporting Resources" with source attribution for trust
 
 **Innovation**: Combines curated precision with vector breadth, avoiding pure LLM hallucination.
 
