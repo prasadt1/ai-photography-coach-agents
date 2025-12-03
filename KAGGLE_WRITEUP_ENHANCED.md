@@ -119,7 +119,7 @@ The Orchestrator mediates **all** communication between sub-agents using the **M
 
 ### 5. Evaluation Pipeline
 
-![Evaluation Pipeline](diagrams_old_mermaid/evaluation_pipeline.png)
+![Evaluation Pipeline](https://github.com/prasadt1/ai-photography-coach-agents/raw/capstone-submission/diagrams_old_mermaid/evaluation_pipeline.png)
 
 **LLM-as-Judge Framework** with 4 dimensions:
 - **Relevance** (focus on user's question)
