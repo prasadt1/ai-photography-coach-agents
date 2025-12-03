@@ -72,13 +72,19 @@ memory_tool.init()
 # Cache agent initialization to avoid reloading on every interaction
 # This speeds up subsequent requests by ~5-10 seconds
 @st.cache_resource(show_spinner="🤖 Initializing AI agents (first time: ~10 seconds)...")
-def get_orchestrator():
-    """Initialize agents once and cache them across requests"""
+def get_orchestrator(_api_key):
+    """Initialize agents once and cache them across requests
+    
+    Note: _api_key parameter ensures cache is keyed by API key,
+    so different users don't share the same model instance
+    """
+    # Reconfigure genai in case cache was from different API key
+    genai.configure(api_key=_api_key)
     vision = VisionAgent()
     knowledge = KnowledgeAgent()
     return Orchestrator(vision, knowledge)
 
-orchestrator = get_orchestrator()
+orchestrator = get_orchestrator(user_api_key)
 # For backward compatibility
 vision_agent = orchestrator.vision_agent
 knowledge_agent = orchestrator.knowledge_agent
