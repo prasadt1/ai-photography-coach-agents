@@ -45,12 +45,12 @@ This shows all three deployment platforms in a single run:
 
 Professional visual diagrams are available in [`assets/diagrams/`](assets/diagrams/):
 
-- **A2A Communication Pattern** - Mediated agent coordination via Orchestrator
+- **Agent Coordination Pattern** - Mediated communication via Orchestrator (ADK native approach, not formal A2A Protocol)
 - **Multi-Platform Architecture** - Shared agents across 3 deployment platforms
 - **Hybrid RAG CASCADE** - Three-tier retrieval (Curated → FAISS → Gemini Grounding)
 - **Agent Hierarchy** - Complete parent/sub-agent pattern with data structures
 
-> **Note**: These diagrams provide detailed visual representations of the architecture described in the sections below.
+> **Note**: These diagrams provide detailed visual representations of the architecture described in the sections below. The coordination pattern follows ADK best practices, not the formal [A2A Protocol](https://a2aproject.github.io/A2A/).
 
 ---
 
