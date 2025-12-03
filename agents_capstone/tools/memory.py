@@ -14,8 +14,8 @@ Architecture Pattern: Adapter Pattern
 Thread Safety: Uses threading.Lock() for concurrent access protection
 Data Format: JSON serialization for complex objects (dicts, lists)
 
-Production Note: For cloud deployment, replace SQLite with Cloud SQL or Firestore
-while keeping the same function signatures.
+Production deployment: Swap SQLite for Cloud SQL or Firestore using the same
+function signatures for easy migration.
 """
 
 import sqlite3

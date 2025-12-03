@@ -11,12 +11,13 @@ Strategy:
 3. Extract important keywords and user intents
 
 Current Implementation: Simple heuristic summarization
-Production Enhancement: Use LLM to generate semantic summaries
+Production Enhancement: Could use LLM for semantic summaries
 
 Design Trade-off: Speed vs. Quality
 - Heuristic: Fast, no API cost, but may miss nuance
 - LLM-based: Better summaries, but adds latency and cost
-For capstone demo, heuristic is sufficient. For production, consider LLM.
+The heuristic approach works well for demo purposes. Production deployments
+might benefit from LLM-based summarization depending on conversation complexity.
 """
 
 from typing import List, Dict
@@ -37,7 +38,7 @@ def compact_context(history: List[Dict[str, str]], max_sentences: int = 3) -> st
     Returns:
         Compact summary string preserving key information
         
-    Usage: Called by Orchestrator when history exceeds 6 turns
+    The Orchestrator calls this when history exceeds 6 turns
     """
     if not history:
         return ""

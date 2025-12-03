@@ -234,9 +234,9 @@ Respond as a friendly photography coach, not as a template."""
         """Generate fallback response if LLM is unavailable.
         
         Fallback Strategy: Simple keyword matching for common photography topics
-        This ensures the UI always displays something useful even during API failures.
+        This ensures something useful displays even during API failures.
         
-        Production Note: In deployed system, fallback responses logged for monitoring
+        In production, these fallback responses should be logged for monitoring
         
         Args:
             query: User's question
