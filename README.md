@@ -222,6 +222,172 @@ This implementation follows **ADK agent hierarchy** principles with a **coordina
 
 This hierarchy mirrors Google's recommended pattern: **one coordinator (Orchestrator) managing specialized workers (Vision, Knowledge)**.
 
+---
+
+### Agent-to-Agent (A2A) Communication
+
+The system implements **mediated A2A communication** through the Orchestrator, following the **Mediator Pattern**:
+
+#### Communication Flow
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    A2A COMMUNICATION PATTERN                     │
+└─────────────────────────────────────────────────────────────────┘
+
+1. VisionAgent → Orchestrator
+   ┌────────────────────────────────────────────────────────┐
+   │ VisionAgent.analyze()                                  │
+   │   Input:  image_path, skill_level                      │
+   │   Output: VisionAnalysis (dataclass)                   │
+   │           • exif: Dict                                 │
+   │           • composition_summary: str                   │
+   │           • detected_issues: List[DetectedIssue]       │
+   │           • strengths: List[str]                       │
+   └─────────────────────┬──────────────────────────────────┘
+                         ↓
+                    Orchestrator stores result
+                         ↓
+2. Orchestrator → KnowledgeAgent (with VisionAgent output)
+   ┌────────────────────────────────────────────────────────┐
+   │ KnowledgeAgent.coach()                                 │
+   │   Input:  query: str                                   │
+   │           vision_analysis: VisionAnalysis ← From A1    │
+   │           session: dict (history + context)            │
+   │   Output: CoachingResponse (dataclass)                 │
+   │           • text: str (LLM-generated advice)           │
+   │           • principles: List[Principle]                │
+   │           • issues: List[str] ← Inherited from A1      │
+   │           • exercise: str                              │
+   └────────────────────────────────────────────────────────┘
+
+Key A2A Pattern: VisionAgent's output becomes KnowledgeAgent's input
+```
+
+#### A2A Communication Types
+
+**1. Sequential A2A (Vision → Knowledge)**
+```python
+# Orchestrator coordinates sequential execution
+vision_result = self.vision_agent.analyze(image_path, skill_level)
+                                          ↓
+coach_result = self.knowledge_agent.coach(
+    query=query,
+    vision_analysis=vision_result,  # ← A2A data passing
+    session=session
+)
+```
+
+**2. Context-Enhanced A2A**
+
+KnowledgeAgent uses VisionAgent's output in multiple ways:
+
+```python
+# In KnowledgeAgent.coach():
+issues = vision_analysis.detected_issues  # ← Issue list from Vision
+
+# Builds RAG query using vision context
+retrieval_query = query + " " + " ".join(issues)  # ← A2A integration
+
+# Includes vision summary in LLM prompt
+prompt = f"""
+Vision Analysis: {vision_analysis.composition_summary}  # ← A2A context
+Detected Issues: {issues}                               # ← A2A context
+User Question: {query}
+...
+"""
+```
+
+**3. State Sharing via Orchestrator**
+
+```python
+# Orchestrator maintains shared state between agents
+session = {
+    "skill_level": "intermediate",    # Shared by both agents
+    "history": [...],                 # Previous A2A interactions
+    "compact_summary": "..."          # Context compaction
+}
+
+# Both agents access same session state
+vision_agent.analyze(..., skill_level=session["skill_level"])
+knowledge_agent.coach(..., session=session)
+```
+
+#### A2A Communication Benefits
+
+**1. Structured Data Contracts**
+- Agents communicate via dataclasses (`VisionAnalysis`, `CoachingResponse`)
+- Type-safe: Mypy/Pylance can validate A2A data flow
+- Self-documenting: Clear what each agent produces/consumes
+
+**2. Loose Coupling**
+- Agents don't directly reference each other
+- Orchestrator handles all routing and coordination
+- Easy to swap agent implementations
+
+**3. Execution Control**
+```python
+# Orchestrator decides:
+# - WHEN agents run (only run Vision if image_path provided)
+# - WHAT context to pass (vision_result may be None)
+# - HOW to aggregate results
+
+if image_path:
+    vision_result = self.vision_agent.analyze(...)
+else:
+    vision_result = None  # Knowledge still works without vision
+
+coach_result = self.knowledge_agent.coach(
+    vision_analysis=vision_result  # May be None - agent handles gracefully
+)
+```
+
+**4. Observable A2A Interactions**
+```python
+# Example: Logging A2A communication for debugging
+logger.info(f"A2A: Vision detected {len(vision_result.issues)} issues")
+logger.info(f"A2A: Knowledge retrieved {len(coach_result.principles)} principles")
+```
+
+#### Why Mediated A2A (Not Direct)?
+
+**✅ Advantages:**
+- Single point of control (Orchestrator)
+- Easy to add transaction semantics (rollback, retry)
+- Clear execution order
+- Simplified testing (mock Orchestrator)
+
+**❌ Direct A2A Alternative Rejected:**
+```python
+# NOT IMPLEMENTED: Direct agent-to-agent calls
+class KnowledgeAgent:
+    def coach(self, ...):
+        # BAD: Tight coupling
+        vision_result = self.vision_agent.analyze(...)  
+```
+
+**Reason:** Violates separation of concerns, harder to test, circular dependencies
+
+#### A2A in 3-Platform Deployment
+
+The **same A2A pattern** works across all platforms:
+
+| Platform | A2A Implementation | Orchestrator Role |
+|----------|-------------------|-------------------|
+| **ADK Runner** | Python function calls | LlmAgent coordinates via tools |
+| **MCP Server** | Tool results passed in memory | Server routes between tool handlers |
+| **Python API** | Direct method calls | Explicit orchestrator.run() |
+
+**Example: ADK Runner A2A**
+```python
+# In adk_runner.py
+analysis = analyze_photo_tool(image_path, skill_level)  # Agent 1
+response = coach_on_photo_tool(
+    query=query,
+    vision_analysis=analysis  # ← A2A data passing in ADK
+)
+```
+
 ### Data Flow Example
 
 ```python
