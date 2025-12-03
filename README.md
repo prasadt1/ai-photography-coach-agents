@@ -17,7 +17,7 @@ Built as part of the **Google AI Agents Intensive Capstone Project** – showcas
 - [🎯 What It Does](#-what-it-does)
 - [🎥 Demo](#-demo)
 - [⭐ Key Features](#-key-features)
-- [🎯 Project Overview](#-project-overview)
+- [🎯 Architecture Overview](#-architecture-overview)
 - [🚀 Quick Start](#-quick-start)
 - [📋 Platform-Specific Usage](#-platform-specific-usage)
 - [🏗️ System Architecture](#️-system-architecture)
@@ -118,17 +118,37 @@ See the system in action:
 
 ---
 
-## 🎯 Project Overview
+## 🎯 Architecture Overview
 
-A **multi-agent photography coaching system** built with Google's agent technologies, demonstrating architectural reusability through three deployment platforms:
+**Core Innovation:** A single, reusable agent implementation that deploys across three platforms without code duplication.
 
-- **ADK Runner**: Cloud-native deployment with `google.adk` (LlmAgent + Runner + Sessions)
-- **MCP Server**: JSON-RPC 2.0 server for Claude Desktop integration  
-- **Python API**: Direct agent imports for custom applications
-- **Multi-Agent Architecture**: Vision Agent + Knowledge Agent + Orchestrator
-- **Hybrid CASCADE RAG**: Novel retrieval combining curated knowledge, vector search, and LLM grounding
+### Three Deployment Modes
 
-**Core Innovation:** Single agent implementation (`VisionAgent`, `KnowledgeAgent`) deploys identically across all platforms with zero code duplication, demonstrating framework-independent architecture.
+| Platform | Use Case | Technology |
+|----------|----------|------------|
+| **ADK Runner** | Production cloud deployment | `google.adk` with LlmAgent, Runner, Sessions |
+| **MCP Server** | Claude Desktop integration | JSON-RPC 2.0 over stdio |
+| **Python API** | Custom applications | Direct imports, notebooks, scripts |
+
+### Agent Architecture
+
+```
+User → Orchestrator (Parent Agent)
+        ├─→ VisionAgent (Gemini Vision) → Photo analysis + EXIF
+        └─→ KnowledgeAgent (Gemini 2.5 Flash + RAG) → Coaching advice
+```
+
+**Why Multi-Agent?**
+- Specialized expertise (vision vs. coaching)
+- Modular design (easy to test/enhance)
+- Clean separation of concerns
+- Framework-independent (same code, multiple platforms)
+
+### Novel RAG Architecture: Hybrid CASCADE
+Three-tier retrieval system combining reliability with flexibility:
+1. **Curated Knowledge** (20 principles) → Fast, high-quality
+2. **FAISS Vector Store** (1000+ docs) → Broad coverage
+3. **Gemini Grounding** → Source attribution
 
 ---
 
