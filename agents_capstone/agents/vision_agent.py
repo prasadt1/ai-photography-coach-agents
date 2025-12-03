@@ -117,8 +117,15 @@ Focus on:
 {exif_context}
 Provide ONLY valid JSON, no markdown formatting."""
             
-            # Call Gemini Vision
-            response = model.generate_content([prompt, img])
+            # Call Gemini Vision with timeout
+            import time
+            start_time = time.time()
+            response = model.generate_content(
+                [prompt, img],
+                request_options={"timeout": 30}  # 30 second timeout
+            )
+            elapsed = time.time() - start_time
+            print(f"✅ Gemini Vision API call completed in {elapsed:.1f}s")
             
             # Parse JSON response
             response_text = response.text.strip()
@@ -135,7 +142,18 @@ Provide ONLY valid JSON, no markdown formatting."""
             return analysis
             
         except Exception as e:
-            print(f"⚠️  Gemini Vision analysis failed: {e}")
+            error_msg = str(e)
+            print(f"⚠️  Gemini Vision analysis failed: {error_msg}")
+            
+            # Check for specific error types
+            if "quota" in error_msg.lower() or "rate limit" in error_msg.lower():
+                print("   ERROR: API quota/rate limit exceeded")
+                print("   This usually means the API key has hit its free tier limit")
+            elif "timeout" in error_msg.lower():
+                print("   ERROR: Request timed out after 30 seconds")
+            elif "api key" in error_msg.lower():
+                print("   ERROR: Invalid or missing API key")
+            
             print("   Falling back to rule-based analysis")
             return self._fallback_analysis(exif)
     

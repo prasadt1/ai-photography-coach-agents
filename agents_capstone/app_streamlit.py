@@ -186,14 +186,29 @@ if "last_uploaded_path" not in st.session_state:
 
 
 def run_turn(user_question: str) -> None:
+    import time
     try:
+        start_time = time.time()
         base: Dict[str, Any] = orchestrator.run(
             user_id="streamlit_user",
             image_path=st.session_state["image_path"],
             query=user_question,
         )
+        elapsed = time.time() - start_time
+        if elapsed > 30:
+            st.warning(f"⏱️ Analysis took {elapsed:.0f}s (unusually long - may indicate API issues)")
     except Exception as e:
-        st.error(f"Error in orchestrator: {e}")
+        error_msg = str(e)
+        st.error(f"❌ **Analysis Failed:** {error_msg}")
+        
+        # Provide helpful context for common errors
+        if "quota" in error_msg.lower() or "rate limit" in error_msg.lower():
+            st.error("🚫 **API Rate Limit Exceeded**\n\nYour API key has hit its free tier limit. Solutions:\n1. Wait a few minutes and try again\n2. Use a different API key\n3. Check quota at: https://aistudio.google.com/app/apikey")
+        elif "timeout" in error_msg.lower():
+            st.error("⏱️ **Request Timed Out**\n\nThe Gemini API took too long to respond. Try:\n1. Use a smaller image (< 2MB)\n2. Check your internet connection\n3. Try again in a few moments")
+        elif "api key" in error_msg.lower() or "invalid" in error_msg.lower():
+            st.error("🔑 **Invalid API Key**\n\nPlease check your API key in the sidebar.")
+        
         return
 
     vision = base.get("vision")
