@@ -63,7 +63,7 @@ The multi-agent design allows:
 
 ### 1. Agent Coordination Pattern
 
-![Agent Coordination Pattern](assets/diagrams/agent_coordination_pattern.png)
+![Agent Coordination Pattern](https://github.com/prasadt1/ai-photography-coach-agents/raw/capstone-submission/assets/diagrams/agent_coordination_pattern.png)
 
 **Flow:** User Request → Orchestrator (parent agent) → VisionAgent analyzes photo (EXIF + composition) → KnowledgeAgent generates coaching (RAG + Gemini 2.5 Flash) → Orchestrator aggregates → Unified response with technical analysis, advice, and practice exercises.
 
@@ -71,7 +71,7 @@ The Orchestrator mediates **all** communication between sub-agents using the **M
 
 ### 2. Agent Hierarchy with Data Structures
 
-![Agent Hierarchy Detailed](assets/diagrams/agent_hierarchy_detailed.png)
+![Agent Hierarchy Detailed](https://github.com/prasadt1/ai-photography-coach-agents/raw/capstone-submission/assets/diagrams/agent_hierarchy_detailed.png)
 
 **Parent Agent: Orchestrator**
 - Routes queries to specialized sub-agents
@@ -93,7 +93,7 @@ The Orchestrator mediates **all** communication between sub-agents using the **M
 
 ### 3. Multi-Platform Deployment
 
-![Multi-Platform Architecture](assets/diagrams/multi_platform_architecture.png)
+![Multi-Platform Architecture](https://github.com/prasadt1/ai-photography-coach-agents/raw/capstone-submission/assets/diagrams/multi_platform_architecture.png)
 
 **Same agents, three deployment modes:**
 
@@ -107,7 +107,7 @@ The Orchestrator mediates **all** communication between sub-agents using the **M
 
 ### 4. Hybrid RAG CASCADE
 
-![Hybrid RAG CASCADE](assets/diagrams/hybrid_rag_cascade.png)
+![Hybrid RAG CASCADE](https://github.com/prasadt1/ai-photography-coach-agents/raw/capstone-submission/assets/diagrams/hybrid_rag_cascade.png)
 
 **Three-tier retrieval system combining reliability with flexibility:**
 
