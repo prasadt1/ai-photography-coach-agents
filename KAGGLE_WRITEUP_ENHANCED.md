@@ -167,7 +167,7 @@ The system handles 50+ turn conversations, maintains context across sessions via
 **Multi-Agent System:**
 - **Orchestrator** – Session management, agent coordination, context compaction
 - **VisionAgent** – EXIF extraction, Gemini Vision analysis, composition issue detection
-- **KnowledgeAgent** – Gemini 1.5 Flash-powered coaching with conversation history
+- **KnowledgeAgent** – Gemini 2.5 Flash-powered coaching with conversation history
 
 **Technology Stack:**
 - **Python 3.11.14** – Core language
@@ -232,7 +232,7 @@ The system handles 50+ turn conversations, maintains context across sessions via
 
 **Challenge 1: Static Responses**
 - Problem: Initial KnowledgeAgent used hardcoded templates
-- Solution: Complete rewrite with Gemini 1.5 Flash integration, structured prompts including conversation history
+- Solution: Complete rewrite with Gemini 2.5 Flash integration, structured prompts including conversation history
 - Result: Dynamic, context-aware coaching
 
 **Challenge 2: Token Limits**
