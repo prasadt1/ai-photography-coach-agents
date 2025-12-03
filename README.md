@@ -17,7 +17,7 @@ Built as part of the **Google AI Agents Intensive Capstone Project** – showcas
 - [🎯 What It Does](#-what-it-does)
 - [🎥 Demo](#-demo)
 - [⭐ Key Features](#-key-features)
-- [🎯 Architecture Overview](#-architecture-overview)
+- [🎯 Quick Architecture Summary](#-quick-architecture-summary)
 - [🚀 Quick Start](#-quick-start)
 - [📋 Platform-Specific Usage](#-platform-specific-usage)
 - [🏗️ System Architecture](#️-system-architecture)
@@ -94,7 +94,7 @@ See the system in action:
 
 ---
 
-## 🎯 Architecture Overview
+## 🎯 Quick Architecture Summary
 
 **Core Innovation:** A single, reusable agent implementation that deploys across three platforms without code duplication.
 
