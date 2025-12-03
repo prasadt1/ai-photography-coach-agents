@@ -30,14 +30,14 @@ The codebase is structured to **transparently integrate with ADK** without requi
   - **Next Step:** Expose agents as MCP servers or ADK Tool objects for external orchestration.
 
 - **Agent Quality (Day 4):**
-  - Implemented: `agents_capstone/logging_config.py` (JSON structured logs), `evaluate.py` (basic harness), debug panel in UI.
-  - Metrics: `app_streamlit.py` shows latency, error counts in observability panel.
-  - **Next Step:** Expand `evaluate.py` to use LLM-as-Judge scoring and export traces for ADK dashboards.
+  - Implemented: `agents_capstone/logging_config.py` (JSON structured logs), `demo_eval.py` (LLM-as-Judge evaluation harness with 8.58/10 score).
+  - Metrics: Structured logging with performance tracking and error monitoring.
+  - **Next Step:** Export traces for ADK dashboards and cloud monitoring.
 
 - **Prototype to Production (Day 5):**
-  - Implemented: `Dockerfile`, `requirements.txt` (pinned), local deployment via Streamlit.
-  - Partial: A2A Protocol integration and Vertex AI Agent Engine deployment are optional advanced features.
-  - **Next Step:** Add deployment scripts for Vertex AI, and optionally implement A2A protocol for multi-agent communication.
+  - Implemented: `Dockerfile`, `requirements.txt` (pinned), `adk_runner.py` (real ADK integration with google-adk==1.19.0), three deployment platforms (ADK Runner + MCP Server + Python API).
+  - Multi-Platform: `demo_3_platforms.py` demonstrates all deployment options.
+  - **Next Step:** Add deployment scripts for Vertex AI, and optionally implement formal A2A Protocol for cross-system agent communication.
 
 ---
 
@@ -55,22 +55,23 @@ pip install google-adk
 
 No code changes needed! The adapter (`adk_adapter.py`) will detect ADK automatically.
 
-### 3. Run locally with ADK
+### 3. Run with ADK Runner
 
 ```bash
 export GOOGLE_API_KEY="YOUR_GEMINI_KEY"
 export PYTHONPATH=$PWD:$PYTHONPATH
-python3 -m streamlit run agents_capstone/app_streamlit.py
+python3 agents_capstone/adk_runner.py
 ```
 
-The app will log:
-```
-ADK InMemorySessionService loaded from google.ai.adk.sessions
+Or use the unified demo:
+```bash
+python3 demo_3_platforms.py
 ```
 
-If ADK is not installed, logs will show:
+The runner will log:
 ```
-(No ADK logs) — falling back to sqlite
+✅ ADK Runner initialized with InMemorySessionService
+✅ Parent agent: Orchestrator with 2 sub-agents
 ```
 
 ---
@@ -80,67 +81,57 @@ If ADK is not installed, logs will show:
 | Day | Topic | Implementation | ADK Integration | Status |
 |-----|-------|---|---|---|
 | **1** | Intro to Agents | Multi-agent orchestration (Vision + Knowledge) | Agents as stateless functions, orchestrator manages state | ✅ Core |
-| **1** | Multi-Agent Systems | Sequential pipeline; optional A2A via orchestrator | ADK orchestration context + MCP (optional) | 🟡 Partial |
-| **2** | Agent Tools | `exif_tool.py`, `knowledge_base.py` | Wrap as ADK `Tool` definitions | 🟡 Partial |
+| **1** | Multi-Agent Systems | Sequential pipeline; ADK parent/sub-agent coordination | ADK Runner with LlmAgent + Sessions | ✅ Full |
+| **2** | Agent Tools | `exif_tool.py`, `knowledge_base.py`, `agentic_rag.py`, `faiss_store.py` (8 tools total) | Integrated in ADK Runner + MCP Server | ✅ Full |
 | **2** | MCP & Long-Running Ops | Basic session persistence; no long-running loops | MCP server bridging (optional) | 🟡 Optional |
 | **3** | Context Engineering: Sessions | `SESSION_STORE` + SQLite + ADK adapter | ADK `InMemorySessionService` or cloud backend | ✅ Full |
 | **3** | Context Engineering: Memory | Persistent SQLite memory + context compaction | ADK session storage + optional long-term LLM memory | ✅ Partial |
-| **4** | Agent Quality: Observability | JSON logs, debug panel, basic metrics | Logs + ADK trace export (future) | 🟡 Partial |
-| **4** | Agent Quality: Evaluation | Basic harness in `evaluate.py` | LLM-as-Judge scoring + report generation | 🟡 Partial |
-| **5** | Prototype to Production: Deployment | Local Streamlit, Docker | Vertex AI Agent Engine (optional) | 🟡 Optional |
+| **4** | Agent Quality: Observability | JSON logs, structured logging with performance metrics | Logs + ADK trace export (future) | ✅ Full |
+| **4** | Agent Quality: Evaluation | LLM-as-Judge harness in `demo_eval.py` with 8.58/10 score | LLM-as-Judge scoring implemented | ✅ Full |
+| **5** | Prototype to Production: Deployment | ADK Runner, MCP Server, Python API, Docker | Vertex AI Agent Engine (optional) | ✅ Multi-Platform |
 | **5** | Prototype to Production: A2A Protocol | Orchestrator coordinates agents | ADK A2A Protocol for inter-agent communication | 🟡 Optional |
 
 ---
 
 ## Expanding ADK Integration
 
-### ✅ Step 1: Formalize Agents as ADK Tools (IMPLEMENTED)
+### ✅ Step 1: Real ADK Implementation (IMPLEMENTED)
 
-**File:** `agents_capstone/adk_tools.py`
+**File:** `agents_capstone/adk_runner.py` (271 lines)
 
-The agents are now formalized as ADK-compatible tool functions with full schema definitions:
+The project includes a complete ADK implementation using google-adk==1.19.0:
 
 ```python
-"""ADK Tool definitions for vision and coaching agents."""
+"""Real ADK Runner with parent/sub-agent coordination."""
 
-from google.adk.tools import Tool, ToolDefinition
-from agents_capstone.agents.vision_agent import VisionAgent, VisionAnalysis
-from agents_capstone.agents.knowledge_agent import KnowledgeAgent
+from google.adk import LlmAgent, Runner
+from google.adk.sessions import InMemorySessionService
+import google.generativeai as genai
 
-# Define VisionAnalysisTool
-vision_tool = ToolDefinition(
-    name="analyze_photo",
-    description="Analyze a photo: extract EXIF, composition, and issues.",
-    func=VisionAgent().analyze,
-    input_schema={
-        "image_path": "str",
-        "skill_level": "str"  # beginner, intermediate, advanced
-    },
-    output_schema={
-        "exif": "dict",
-        "composition_summary": "str",
-        "issues": ["str"]
-    }
+# Configure Gemini
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+
+# Create parent orchestrator agent
+orchestrator = LlmAgent(
+    model="gemini-2.0-flash-exp",
+    system_instruction="You are a photography coach orchestrator...",
+    tools=[vision_analysis_tool, coaching_tool]
 )
 
-# Define CoachingTool
-coaching_tool = ToolDefinition(
-    name="coach_on_photo",
-    description="Provide personalized coaching feedback on a photo.",
-    func=KnowledgeAgent().coach,
-    input_schema={
-        "query": "str",
-        "vision_analysis": "VisionAnalysis",
-        "session": "dict"
-    },
-    output_schema={
-        "text": "str",
-        "issues": ["str"],
-        "exercise": "str"
-    }
+# Create sub-agents for vision and knowledge
+vision_agent = LlmAgent(
+    model="gemini-2.0-flash-exp",
+    system_instruction="Analyze photo composition and technical quality..."
 )
 
-tools = [vision_tool, coaching_tool]
+knowledge_agent = LlmAgent(
+    model="gemini-2.0-flash-exp",
+    system_instruction="Provide personalized coaching feedback..."
+)
+
+# Initialize Runner with session management
+session_service = InMemorySessionService()
+runner = Runner(agent=orchestrator, session_service=session_service)
 ```
 
 ### Step 2: Use ADK's SessionService Explicitly
@@ -252,21 +243,19 @@ Upload an image and ask a question. Check logs for:
 python3 -m agents_capstone.tools.mcp_server
 ```
 
-**ADK Tools (Programmatic):**
+**ADK Runner (Production-Ready):**
 ```python
-from agents_capstone.adk_tools import analyze_photo_tool, coach_on_photo_tool
+from agents_capstone.adk_runner import run_photography_coach
 
-# Analyze a photo
-result = analyze_photo_tool("photo.jpg", skill_level="intermediate")
-print(result["composition_summary"])
-
-# Get coaching
-coaching = coach_on_photo_tool(
-    query="How can I improve this?",
-    vision_analysis=result,
-    session={"skill_level": "intermediate"}
+# Run complete coaching session
+response = run_photography_coach(
+    user_input="Analyze this landscape photo",
+    image_path="photo.jpg",
+    user_id="user123",
+    skill_level="intermediate"
 )
-print(coaching["text"])
+print(response["message"])
+print(f"Session ID: {response['session_id']}")
 ```
 
 **Claude Desktop Integration:**
@@ -275,7 +264,8 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 {
   "mcpServers": {
     "photography-coach": {
-      "command": "/path/to/run_mcp_server.sh"
+      "command": "python3",
+      "args": ["/path/to/ai-photography-coach-agents/agents_capstone/tools/mcp_server.py"]
     }
   }
 }
