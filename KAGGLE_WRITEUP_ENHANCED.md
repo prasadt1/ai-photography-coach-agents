@@ -117,7 +117,11 @@ The Orchestrator mediates **all** communication between sub-agents using the **M
 
 **Cascade Logic:** Try curated first (best quality) → Fallback to FAISS if insufficient → Always add grounding citations for trust.
 
-### 5. Evaluation Pipeline
+### 5. Session & Memory Management
+
+**Persistent Conversations:** SQLite backend (`agents_memory.db`) with ADK adapter pattern enables 50+ turn conversations. Context compaction preserves recent 3 turns at full fidelity while summarizing history to prevent token overflow. User-keyed sessions support multi-day coaching with conversation resumption.
+
+### 6. Evaluation Pipeline
 
 ![Evaluation Pipeline](https://github.com/prasadt1/ai-photography-coach-agents/raw/capstone-submission/diagrams_old_mermaid/evaluation_pipeline.png)
 
@@ -182,34 +186,11 @@ The system handles 50+ turn conversations, maintains context across sessions via
 
 ### 5-Day Build Process
 
-**Day 1 – Foundation:**
-- Multi-agent architecture with clean separation of concerns
-- Orchestrator for session lifecycle management
-- ADK-compatible adapter pattern for future cloud deployment
-
-**Day 2 – Agent Implementation:**
-- VisionAgent: EXIF extraction, Gemini Vision integration, issue detection with severity scoring (low/medium/high), strength identification
-- KnowledgeAgent: **Full Gemini 2.5 Flash integration** (dynamic LLM responses, not templates), conversation history tracking (last 3 turns), Hybrid CASCADE RAG (curated → FAISS → grounding)
-
-**Day 3 – Observability:**
-- Structured JSON logging with agent call traces
-- Latency tracking for each operation
-- Debug panel in Streamlit (session state, agent calls, performance metrics)
-- Context compaction to prevent token overflow in long conversations
-
-**Day 4 – Evaluation:**
-- LLM-as-Judge framework with 4 dimensions: Relevance, Completeness, Accuracy, Actionability
-- Gemini as automated evaluator (eliminates human bias)
-- HTML dashboard + CSV export + JSON detailed results
-- Three evaluation runners: `demo_eval.py`, `run_evaluation.py`, `quick_eval.py`
-
-**Day 5 – Production Deployment:**
-- Streamlit web app with file upload, real-time EXIF display, chat interface
-- **Multi-platform deployment:** ADK Runner, MCP Server (Claude Desktop), Python API
-- Docker containerization with pinned dependencies
-- SQLite persistence for session restoration across app restarts
-- **Real ADK integration** with `google.adk 1.19.0` (LlmAgent, Runner, Sessions)
-- MCP Server implementing JSON-RPC 2.0 protocol for Claude Desktop
+**Day 1:** Multi-agent architecture with Orchestrator + ADK adapter pattern  
+**Day 2:** VisionAgent (EXIF + Gemini Vision) + KnowledgeAgent (Gemini 2.5 Flash + Hybrid CASCADE RAG)  
+**Day 3:** Structured logging, latency tracking, context compaction  
+**Day 4:** LLM-as-Judge evaluation (4 dimensions, 8.58/10 score)  
+**Day 5:** Multi-platform deployment (ADK Runner + MCP Server + Python API), Docker containerization
 
 ### Key Engineering Decisions
 
@@ -228,79 +209,17 @@ The system handles 50+ turn conversations, maintains context across sessions via
 - Eliminates subjective human bias
 - Provides quantitative metrics (0-10 scores) for iterative improvement
 
-### Challenges Overcome
+### Key Challenges
 
-**Challenge 1: Static Responses**
-- Problem: Initial KnowledgeAgent used hardcoded templates
-- Solution: Complete rewrite with Gemini 2.5 Flash integration, structured prompts including conversation history
-- Result: Dynamic, context-aware coaching
+**Static Responses:** Rewrote KnowledgeAgent with full Gemini integration for dynamic coaching  
+**Token Limits:** Context compaction enables 50+ turn conversations  
+**Encoding:** UTF-8 + HTML escaping for clean reports
 
-**Challenge 2: Token Limits**
-- Problem: Long conversations exceeded context windows
-- Solution: Context compaction preserving last 3 turns + summarized history
-- Result: Supports 50+ turn conversations
+### Production-Ready Features
 
-**Challenge 3: Encoding Issues**
-- Problem: HTML reports displayed garbled characters
-- Solution: UTF-8 charset + HTML entity escaping
-- Result: Clean, professional reports
-
-### Production-Ready Architecture
-
-**Deployment Readiness:**
-The system is architected for production deployment from day one:
-
-**ADK Compatibility:**
-- Memory adapter pattern (`tools/adk_adapter.py`) matches Google Agent Development Kit API
-- Stateless agent design enables cloud scaling
-- Easy migration path from SQLite → Cloud SQL/Firestore documented in `DEPLOYMENT.md`
-
-**Comprehensive Documentation:**
-- `DEPLOYMENT.md`: Complete guide for Docker, Cloud Run, and ADK deployment
-- `VIDEO_SCRIPT.md`: YouTube demo script for showcasing the system
-- Inline code comments explain design decisions and implementation details
-- README with quick-start instructions and architecture overview
-
-**Scalability Features:**
-- Thread-safe memory layer for concurrent users
-- Context compaction prevents token overflow in long sessions
-- Structured logging for production observability
-- Docker containerization with health checks and restart policies
-
-**Multi-Platform Deployment:**
-
-The system demonstrates **architectural flexibility** with three production-ready deployment modes:
-
-**1. ADK Runner (Cloud Production)**
-```bash
-python3 agents_capstone/adk_runner.py
-```
-- Real `google.adk` integration (version 1.19.0)
-- LlmAgent with Gemini 2.5 Flash
-- Runner with InMemorySessionService
-- Async event streaming
-- Vertex AI deployment ready
-
-**2. MCP Server (Claude Desktop Integration)**
-```bash
-python3 agents_capstone/tools/mcp_server.py
-```
-- JSON-RPC 2.0 protocol over stdio
-- Three tools: `analyze_photo`, `coach_on_photo`, `get_session_history`
-- Works with Claude Desktop and VS Code MCP
-- Configure in `claude_desktop_config.json`
-
-**3. Python API (Custom Applications)**
-```python
-from agents_capstone.agents import Orchestrator, VisionAgent, KnowledgeAgent
-orchestrator = Orchestrator(VisionAgent(), KnowledgeAgent())
-result = orchestrator.run(user_id="user123", image_path="photo.jpg", query="How to improve?")
-```
-
-**Unified Demo:**
-```bash
-python3 demo_3_platforms.py  # All three platforms in one script
-```
+**Three Deployment Modes:** ADK Runner (`google.adk 1.19.0`), MCP Server (JSON-RPC 2.0, Claude Desktop ready), Python API  
+**Scalability:** Thread-safe memory, Docker containerization, SQLite → Cloud SQL migration path  
+**Observability:** Structured logging, latency tracking, debug panels
 
 ---
 
