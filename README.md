@@ -224,9 +224,11 @@ This hierarchy mirrors Google's recommended pattern: **one coordinator (Orchestr
 
 ---
 
-### Agent-to-Agent (A2A) Communication
+### Agent-to-Agent Communication Patterns
 
-The system implements **mediated A2A communication** through the Orchestrator, following the **Mediator Pattern**:
+The system implements **mediated agent coordination** through the Orchestrator, following the **Mediator Pattern**.
+
+> **Note:** This is NOT an implementation of a formal "Google A2A Protocol" (if such a standardized specification exists). Instead, we follow **ADK agent coordination best practices**: parent agent (Orchestrator) coordinates specialized sub-agents (Vision, Knowledge) through structured data passing. The term "A2A" here refers to general agent-to-agent communication patterns, not a specific protocol.
 
 #### Communication Flow
 
@@ -264,9 +266,9 @@ The system implements **mediated A2A communication** through the Orchestrator, f
 Key A2A Pattern: VisionAgent's output becomes KnowledgeAgent's input
 ```
 
-#### A2A Communication Types
+#### Agent Communication Patterns
 
-**1. Sequential A2A (Vision → Knowledge)**
+**1. Sequential Coordination (Vision → Knowledge)**
 ```python
 # Orchestrator coordinates sequential execution
 vision_result = self.vision_agent.analyze(image_path, skill_level)
@@ -278,7 +280,7 @@ coach_result = self.knowledge_agent.coach(
 )
 ```
 
-**2. Context-Enhanced A2A**
+**2. Context-Enhanced Coordination**
 
 KnowledgeAgent uses VisionAgent's output in multiple ways:
 
@@ -287,12 +289,12 @@ KnowledgeAgent uses VisionAgent's output in multiple ways:
 issues = vision_analysis.detected_issues  # ← Issue list from Vision
 
 # Builds RAG query using vision context
-retrieval_query = query + " " + " ".join(issues)  # ← A2A integration
+retrieval_query = query + " " + " ".join(issues)  # ← Inter-agent data flow
 
 # Includes vision summary in LLM prompt
 prompt = f"""
-Vision Analysis: {vision_analysis.composition_summary}  # ← A2A context
-Detected Issues: {issues}                               # ← A2A context
+Vision Analysis: {vision_analysis.composition_summary}  # ← Agent context sharing
+Detected Issues: {issues}                               # ← Agent context sharing
 User Question: {query}
 ...
 """
@@ -313,7 +315,7 @@ vision_agent.analyze(..., skill_level=session["skill_level"])
 knowledge_agent.coach(..., session=session)
 ```
 
-#### A2A Communication Benefits
+#### Communication Pattern Benefits
 
 **1. Structured Data Contracts**
 - Agents communicate via dataclasses (`VisionAnalysis`, `CoachingResponse`)
@@ -342,14 +344,14 @@ coach_result = self.knowledge_agent.coach(
 )
 ```
 
-**4. Observable A2A Interactions**
+**4. Observable Interactions**
 ```python
-# Example: Logging A2A communication for debugging
-logger.info(f"A2A: Vision detected {len(vision_result.issues)} issues")
-logger.info(f"A2A: Knowledge retrieved {len(coach_result.principles)} principles")
+# Example: Logging agent coordination for debugging
+logger.info(f"Vision → Orchestrator: detected {len(vision_result.issues)} issues")
+logger.info(f"Knowledge → Orchestrator: retrieved {len(coach_result.principles)} principles")
 ```
 
-#### Why Mediated A2A (Not Direct)?
+#### Why Mediated Coordination (Not Direct Agent Calls)?
 
 **✅ Advantages:**
 - Single point of control (Orchestrator)
@@ -357,7 +359,7 @@ logger.info(f"A2A: Knowledge retrieved {len(coach_result.principles)} principles
 - Clear execution order
 - Simplified testing (mock Orchestrator)
 
-**❌ Direct A2A Alternative Rejected:**
+**❌ Direct Agent-to-Agent Calls (Rejected):**
 ```python
 # NOT IMPLEMENTED: Direct agent-to-agent calls
 class KnowledgeAgent:
@@ -368,23 +370,23 @@ class KnowledgeAgent:
 
 **Reason:** Violates separation of concerns, harder to test, circular dependencies
 
-#### A2A in 3-Platform Deployment
+#### Agent Coordination Across 3 Platforms
 
-The **same A2A pattern** works across all platforms:
+The **same coordination pattern** works across all platforms:
 
-| Platform | A2A Implementation | Orchestrator Role |
-|----------|-------------------|-------------------|
+| Platform | Coordination Mechanism | Orchestrator Role |
+|----------|----------------------|-------------------|
 | **ADK Runner** | Python function calls | LlmAgent coordinates via tools |
 | **MCP Server** | Tool results passed in memory | Server routes between tool handlers |
 | **Python API** | Direct method calls | Explicit orchestrator.run() |
 
-**Example: ADK Runner A2A**
+**Example: ADK Runner Coordination**
 ```python
 # In adk_runner.py
 analysis = analyze_photo_tool(image_path, skill_level)  # Agent 1
 response = coach_on_photo_tool(
     query=query,
-    vision_analysis=analysis  # ← A2A data passing in ADK
+    vision_analysis=analysis  # ← Inter-agent data passing
 )
 ```
 
