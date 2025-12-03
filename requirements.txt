@@ -1,5 +1,5 @@
 # Python 3.11+ recommended (tested on 3.11.14)
-streamlit==1.30.0
+streamlit>=1.39.0
 Pillow>=10.0.0
 google-generativeai>=0.4.0
 numpy>=1.26.0
@@ -16,3 +16,6 @@ pypdf>=3.17.0
 # ADK (Google Agent Development Kit) - Real integration with google-adk SDK
 google-adk==1.19.0
 google-genai>=0.3.0
+
+# Ensure compatible tenacity version for both streamlit and google-adk
+tenacity>=9.0.0
