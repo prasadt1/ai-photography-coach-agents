@@ -103,20 +103,156 @@ print(response.principles)  # Retrieved knowledge citations
 
 ## 🏗️ Architecture
 
-### Multi-Agent System
+### Multi-Agent System Architecture
+
+This implementation follows **ADK agent hierarchy** principles with a **coordinating parent agent** (Orchestrator) managing **specialized sub-agents** (Vision, Knowledge):
 
 ```
-User Query → Orchestrator
-              ↓
-    ┌─────────┴─────────┐
-    ↓                   ↓
-VisionAgent      KnowledgeAgent
-(Gemini Vision)  (Gemini + RAG)
-    ↓                   ↓
-EXIF + Issues    Coaching + Citations
-    └─────────┬─────────┘
-              ↓
-      Unified Response
+┌─────────────────────────────────────────────────────────────────────┐
+│                         USER REQUEST                                │
+│              (Query + Optional Image + Session Context)             │
+└────────────────────────────────┬────────────────────────────────────┘
+                                 ↓
+┌─────────────────────────────────────────────────────────────────────┐
+│                    ORCHESTRATOR AGENT (Parent)                      │
+│  • Routes requests to specialized sub-agents                        │
+│  • Manages session state & conversation history                     │
+│  • Coordinates multi-turn interactions                              │
+│  • Implements context compaction (prevent token overflow)           │
+│  • Persists memory (SQLite → ADK Cloud Memory adapter ready)        │
+└──────────────────┬──────────────────────┬───────────────────────────┘
+                   ↓                      ↓
+    ┌──────────────────────┐   ┌──────────────────────────┐
+    │   VISION AGENT       │   │   KNOWLEDGE AGENT        │
+    │   (Sub-Agent 1)      │   │   (Sub-Agent 2)          │
+    │                      │   │                          │
+    │ Model: Gemini 2.5    │   │ Model: Gemini 2.5 Flash  │
+    │        Flash Vision  │   │                          │
+    │                      │   │ RAG: Hybrid CASCADE      │
+    │ Capabilities:        │   │                          │
+    │ • EXIF extraction    │   │ Capabilities:            │
+    │ • Composition        │   │ • Query understanding    │
+    │   analysis           │   │ • Knowledge retrieval    │
+    │ • Issue detection    │   │ • Response generation    │
+    │   (severity scoring) │   │ • Citation grounding     │
+    │ • Strength ID        │   │ • Skill adaptation       │
+    └──────────┬───────────┘   └──────────┬───────────────┘
+               ↓                          ↓
+    ┌─────────────────────┐   ┌──────────────────────────┐
+    │ OUTPUT:             │   │ OUTPUT:                  │
+    │ VisionAnalysis      │   │ CoachingResponse         │
+    │ • exif: dict        │   │ • text: str              │
+    │ • composition_      │   │ • principles: [...]      │
+    │   summary: str      │   │ • issues: [...]          │
+    │ • detected_issues:  │   │ • exercise: str          │
+    │   [{type, severity, │   │                          │
+    │     description,    │   │ Uses vision_analysis     │
+    │     suggestion}]    │   │ as input context         │
+    │ • strengths: [str]  │   │                          │
+    └─────────────────────┘   └──────────────────────────┘
+               │                          │
+               └──────────┬───────────────┘
+                          ↓
+         ┌────────────────────────────────────┐
+         │     ORCHESTRATOR AGGREGATION       │
+         │  • Combines vision + knowledge     │
+         │  • Updates conversation history    │
+         │  • Persists session state          │
+         └────────────────┬───────────────────┘
+                          ↓
+         ┌────────────────────────────────────┐
+         │       UNIFIED RESPONSE             │
+         │  • Complete coaching advice        │
+         │  • Technical analysis details      │
+         │  • RAG citations                   │
+         │  • Practice exercises              │
+         │  • Session context maintained      │
+         └────────────────────────────────────┘
+```
+
+### Agent Hierarchy (ADK Pattern)
+
+**Parent Agent: Orchestrator**
+- **Role**: Coordination & state management
+- **Responsibilities**:
+  - Route user queries to appropriate sub-agents
+  - Decide execution order (Vision first, then Knowledge)
+  - Aggregate results from multiple agents
+  - Maintain conversation history across turns
+  - Implement context compaction for long sessions
+  - Persist state to memory (SQLite with ADK adapter pattern)
+- **Does NOT**: Directly call Gemini for generation (delegates to sub-agents)
+
+**Sub-Agent 1: VisionAgent**
+- **Role**: Image analysis specialist
+- **Gemini Model**: `gemini-2.5-flash` with vision capabilities
+- **Input**: Image path + skill level
+- **Output**: Structured `VisionAnalysis` object
+- **Responsibilities**:
+  - Extract EXIF metadata (camera settings, lens info)
+  - Analyze composition using Gemini Vision
+  - Detect issues with severity scoring (low/medium/high)
+  - Identify photo strengths
+  - Format results for downstream agents
+
+**Sub-Agent 2: KnowledgeAgent**
+- **Role**: Coaching & knowledge retrieval specialist
+- **Gemini Model**: `gemini-2.5-flash` (text-only)
+- **RAG**: Hybrid CASCADE (curated + FAISS + grounding)
+- **Input**: User query + optional VisionAnalysis + session history
+- **Output**: Structured `CoachingResponse` object
+- **Responsibilities**:
+  - Retrieve relevant photography principles (RAG)
+  - Generate personalized coaching advice
+  - Adapt language to user skill level
+  - Add citations to ground responses
+  - Create practice exercises
+
+### Why This Agent Hierarchy?
+
+**Follows ADK Best Practices:**
+1. ✅ **Separation of Concerns**: Each agent has clear, non-overlapping responsibilities
+2. ✅ **Composability**: Easy to add new specialized agents (e.g., StyleAgent, HistoryAgent)
+3. ✅ **Testability**: Each agent can be unit tested independently
+4. ✅ **Scalability**: Sub-agents can be deployed on different infrastructure
+
+**Alternative Considered:**
+- **Flat architecture** (single agent doing everything) → Rejected: Hard to maintain, poor separation
+- **Peer-to-peer agents** → Rejected: Complex coordination, harder to reason about
+
+This hierarchy mirrors Google's recommended pattern: **one coordinator (Orchestrator) managing specialized workers (Vision, Knowledge)**.
+
+### Data Flow Example
+
+```python
+# 1. User uploads photo and asks question
+user_input = {
+    "query": "How can I improve this landscape composition?",
+    "image_path": "photo.jpg",
+    "skill_level": "intermediate"
+}
+
+# 2. Orchestrator routes to VisionAgent
+vision_result = vision_agent.analyze(
+    image_path="photo.jpg",
+    skill_level="intermediate"
+)
+# Returns: VisionAnalysis(exif={...}, issues=[...], strengths=[...])
+
+# 3. Orchestrator passes vision_result to KnowledgeAgent
+coaching_result = knowledge_agent.coach(
+    query="How can I improve this landscape composition?",
+    vision_analysis=vision_result,  # Context from sub-agent 1
+    session={"history": [...]}       # Maintained by orchestrator
+)
+# Returns: CoachingResponse(text="...", principles=[...], exercise="...")
+
+# 4. Orchestrator aggregates and persists
+final_response = {
+    "analysis": vision_result,
+    "coaching": coaching_result,
+    "session_updated": True
+}
 ```
 
 ### Agent Capabilities
@@ -133,18 +269,47 @@ EXIF + Issues    Coaching + Citations
 - Practice exercise generation
 - Session history awareness
 
+### Deployment Architecture (3 Platforms)
+
+The **same agent hierarchy** (Orchestrator → Vision + Knowledge) deploys across three platforms:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     CORE AGENTS (Shared)                        │
+│                                                                 │
+│  Orchestrator ────┬──→ VisionAgent (Gemini Vision)            │
+│                   └──→ KnowledgeAgent (Gemini + RAG)           │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+        ┌─────────────────────┼─────────────────────┐
+        ↓                     ↓                     ↓
+┌───────────────┐   ┌──────────────────┐   ┌──────────────────┐
+│  ADK RUNNER   │   │   MCP SERVER     │   │   PYTHON API     │
+│  (Cloud)      │   │   (Desktop)      │   │   (Custom)       │
+├───────────────┤   ├──────────────────┤   ├──────────────────┤
+│ LlmAgent      │   │ JSON-RPC 2.0     │   │ Direct imports   │
+│ Runner        │   │ stdio transport  │   │ function calls   │
+│ Sessions      │   │ 3 tools exposed  │   │                  │
+│               │   │                  │   │                  │
+│ Deploy:       │   │ Deploy:          │   │ Deploy:          │
+│ Vertex AI     │   │ Claude Desktop   │   │ Notebooks        │
+│ Cloud Run     │   │ Local machine    │   │ Custom apps      │
+└───────────────┘   └──────────────────┘   └──────────────────┘
+```
+
 ### Platform Comparison
 
 | Feature | ADK Runner | MCP Server | Python API |
 |---------|-----------|-----------|-----------|
 | **Framework** | google.adk | JSON-RPC 2.0 | Native Python |
 | **Deployment** | Vertex AI / Cloud | Claude Desktop | Notebooks, scripts |
-| **Session Management** | InMemorySessionService | Custom state | Custom state |
+| **Agent Access** | Via LlmAgent wrapper | Via tool definitions | Direct class import |
+| **Session Management** | InMemorySessionService | Custom dict | Custom dict |
 | **Execution** | Async (Runner) | Async (stdio) | Synchronous |
 | **Use Case** | Enterprise scaling | Local AI assistant | Custom integration |
 | **Code Reuse** | ✅ Same agents | ✅ Same agents | ✅ Same agents |
 
-**Architectural Principle:** Zero code duplication across platforms – same `VisionAgent` and `KnowledgeAgent` work everywhere.
+**Architectural Principle:** Zero code duplication across platforms – the **same Orchestrator, VisionAgent, and KnowledgeAgent** instances work everywhere. Only the **deployment wrapper** changes.
 
 ---
 
