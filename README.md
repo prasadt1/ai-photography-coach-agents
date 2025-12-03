@@ -41,6 +41,19 @@ This shows all three deployment platforms in a single run:
 
 ---
 
+## 📊 Architecture Diagrams
+
+Professional visual diagrams are available in [`assets/diagrams/`](assets/diagrams/):
+
+- **A2A Communication Pattern** - Mediated agent coordination via Orchestrator
+- **Multi-Platform Architecture** - Shared agents across 3 deployment platforms
+- **Hybrid RAG CASCADE** - Three-tier retrieval (Curated → FAISS → Gemini Grounding)
+- **Agent Hierarchy** - Complete parent/sub-agent pattern with data structures
+
+> **Note**: These diagrams provide detailed visual representations of the architecture described in the sections below.
+
+---
+
 ## 📋 Platform-Specific Usage
 
 ### ADK Runner (Cloud Deployment)
