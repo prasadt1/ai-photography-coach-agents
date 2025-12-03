@@ -41,24 +41,6 @@ This shows all three deployment platforms in a single run:
 
 ---
 
-## 📊 System Architecture
-
-### Agent Coordination Pattern
-
-The system uses **ADK's native parent/sub-agent coordination** (not the formal [A2A Protocol](https://a2aproject.github.io/A2A/)). The Orchestrator mediates all communication between sub-agents:
-
-![Agent Coordination Pattern](assets/diagrams/agent_coordination_pattern.png)
-
-### Additional Architecture Diagrams
-
-Complete visual documentation available in [`assets/diagrams/`](assets/diagrams/):
-
-- **[Multi-Platform Architecture](assets/diagrams/multi_platform_architecture.png)** - Shared agents across ADK Runner, MCP Server, Python API
-- **[Hybrid RAG CASCADE](assets/diagrams/hybrid_rag_cascade.png)** - Three-tier retrieval (Curated → FAISS → Gemini Grounding)
-- **[Agent Hierarchy Detailed](assets/diagrams/agent_hierarchy_detailed.png)** - Parent/sub-agent pattern with data structures
-
----
-
 ## 📋 Platform-Specific Usage
 
 ### ADK Runner (Cloud Deployment)
@@ -119,9 +101,15 @@ print(response.principles)  # Retrieved knowledge citations
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ System Architecture
 
-### Multi-Agent System Architecture
+### Agent Coordination Pattern
+
+The system uses **ADK's native parent/sub-agent coordination** (not the formal [A2A Protocol](https://a2aproject.github.io/A2A/)). The Orchestrator mediates all communication between sub-agents:
+
+![Agent Coordination Pattern](assets/diagrams/agent_coordination_pattern.png)
+
+### Multi-Agent Architecture Overview
 
 This implementation follows **ADK agent hierarchy** principles with a **coordinating parent agent** (Orchestrator) managing **specialized sub-agents** (Vision, Knowledge):
 
@@ -240,9 +228,17 @@ This implementation follows **ADK agent hierarchy** principles with a **coordina
 
 This hierarchy mirrors Google's recommended pattern: **one coordinator (Orchestrator) managing specialized workers (Vision, Knowledge)**.
 
+### Additional Architecture Diagrams
+
+Comprehensive visual documentation in [`assets/diagrams/`](assets/diagrams/):
+
+- **[Multi-Platform Architecture](assets/diagrams/multi_platform_architecture.png)** - Shared agents across ADK Runner, MCP Server, Python API
+- **[Hybrid RAG CASCADE](assets/diagrams/hybrid_rag_cascade.png)** - Three-tier retrieval (Curated → FAISS → Gemini Grounding)
+- **[Agent Hierarchy Detailed](assets/diagrams/agent_hierarchy_detailed.png)** - Parent/sub-agent pattern with complete data structures
+
 ---
 
-### Agent-to-Agent Communication Patterns
+### Agent Communication Patterns
 
 The system implements **mediated agent coordination** through the Orchestrator, following the **Mediator Pattern**.
 
@@ -252,7 +248,7 @@ The system implements **mediated agent coordination** through the Orchestrator, 
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    A2A COMMUNICATION PATTERN                     │
+│              MEDIATED AGENT COORDINATION FLOW                    │
 └─────────────────────────────────────────────────────────────────┘
 
 1. VisionAgent → Orchestrator
@@ -281,7 +277,7 @@ The system implements **mediated agent coordination** through the Orchestrator, 
    │           • exercise: str                              │
    └────────────────────────────────────────────────────────┘
 
-Key A2A Pattern: VisionAgent's output becomes KnowledgeAgent's input
+Key Pattern: Orchestrator mediates - VisionAgent's output becomes KnowledgeAgent's input
 ```
 
 #### Agent Communication Patterns
