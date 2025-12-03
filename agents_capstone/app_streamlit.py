@@ -72,11 +72,12 @@ memory_tool.init()
 # Cache agent initialization to avoid reloading on every interaction
 # This speeds up subsequent requests by ~5-10 seconds
 @st.cache_resource(show_spinner="🤖 Initializing AI agents (first time: ~10 seconds)...")
-def get_orchestrator(_api_key, _version="v2.5"):
+def get_orchestrator(_api_key, _version="v2.5", _force_refresh=None):
     """Initialize agents once and cache them across requests
     
     Note: _api_key parameter ensures cache is keyed by API key,
-    _version forces cache refresh when model changes
+    _version forces cache refresh when model changes,
+    _force_refresh is for deployment cache busting
     """
     # Reconfigure genai in case cache was from different API key
     genai.configure(api_key=_api_key)
@@ -84,7 +85,9 @@ def get_orchestrator(_api_key, _version="v2.5"):
     knowledge = KnowledgeAgent()
     return Orchestrator(vision, knowledge)
 
-orchestrator = get_orchestrator(user_api_key, _version="v2.5-flash")
+# FORCE REFRESH: Change this value to bust Streamlit Cloud cache
+CACHE_VERSION = "2024-12-03-v3"  
+orchestrator = get_orchestrator(user_api_key, _version="v2.5-flash", _force_refresh=CACHE_VERSION)
 # For backward compatibility
 vision_agent = orchestrator.vision_agent
 knowledge_agent = orchestrator.knowledge_agent
@@ -280,6 +283,13 @@ with col_left:
             st.session_state["chat_history"] = []
             st.session_state["last_result"] = None
             st.session_state["last_uploaded_path"] = uploaded.name
+            
+            # NUCLEAR OPTION: Force vision agent to reinitialize its model
+            try:
+                vision_agent.model = None  # Clear cached model
+                genai.configure(api_key=user_api_key)  # Reconfigure API
+            except Exception as e:
+                st.warning(f"⚠️ Model reset: {e}")
             # Force fresh analysis by clearing any cached agents
             st.cache_resource.clear()
         else:
