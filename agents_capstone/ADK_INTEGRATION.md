@@ -292,10 +292,10 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 ## References
 
-- [ADK Documentation](https://cloud.google.com/docs/agent-development-kit)
-- [Agent Quality Whitepaper](https://cloud.google.com/documents/agent-quality)
-- [Context Engineering: Sessions & Memory](https://cloud.google.com/documents/context-engineering)
-- [Prototype to Production Whitepaper](https://cloud.google.com/documents/prototype-to-production)
+- [ADK Python Package](https://pypi.org/project/google-adk/) - Official PyPI package
+- [Vertex AI Generative AI](https://cloud.google.com/vertex-ai/generative-ai/docs) - Google Cloud documentation
+- [Vertex AI Agent Builder](https://cloud.google.com/agent-builder) - Agent development platform
+- [Gemini API Documentation](https://ai.google.dev/gemini-api/docs) - Gemini model reference
 
 ---
 

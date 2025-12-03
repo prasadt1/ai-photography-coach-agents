@@ -358,11 +358,11 @@ gcloud logging read \
 
 ## References
 
-- [Google Cloud Logging](https://cloud.google.com/logging)
-- [Google Cloud Monitoring](https://cloud.google.com/monitoring)
-- [Google Cloud Trace](https://cloud.google.com/trace)
+- [Google Cloud Logging](https://cloud.google.com/logging/docs)
+- [Google Cloud Monitoring](https://cloud.google.com/monitoring/docs)
+- [Google Cloud Trace](https://cloud.google.com/trace/docs)
 - [OpenTelemetry Python](https://opentelemetry.io/docs/instrumentation/python/)
-- [ADK Observability](https://cloud.google.com/docs/agent-development-kit/observability)
+- [Vertex AI Agent Builder](https://cloud.google.com/agent-builder) - For production agent deployment
 
 ---
 
