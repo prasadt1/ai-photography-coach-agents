@@ -60,7 +60,7 @@ Interactive coaching replies
     - `exif`: cleaned metadata.
     - `issues`: simple tags (e.g., `subject_centered`, `horizon_tilt`, `high_iso`).
 
-- **ChatCoach (`agents/chat_coach.py`)**
+- **KnowledgeAgent (`agents/knowledge_agent.py`)** - Primary coaching agent
   - Builds prompts from:
     - Vision summary,
     - EXIF,
@@ -89,7 +89,7 @@ agents_capstone/
 ├── app_streamlit.py          # Streamlit web demo for the capstone
 ├── agents/
 │   ├── vision_agent.py       # Gemini Vision + EXIF → VisionAnalysis
-│   ├── chat_coach.py         # Multi-turn coaching using Gemini
+│   # Three core agents: orchestrator, vision_agent, knowledge_agent
 │   ├── knowledge_agent.py    # RAG + structured coaching (used in ADK version)
 │   └── orchestrator.py       # Orchestrator for ADK / multi-agent flows
 ├── tools/

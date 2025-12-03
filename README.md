@@ -817,18 +817,17 @@ Query → Agentic RAG (Gemini creativity)
 ```
 agents_capstone/
 ├── agents/
-│   ├── orchestrator.py      # Multi-agent coordinator
-│   ├── vision_agent.py       # EXIF + composition analysis
-│   ├── knowledge_agent.py    # Gemini + RAG coaching
-│   └── chat_coach.py         # Conversational interface
+│   ├── orchestrator.py      # Multi-agent coordinator (parent agent)
+│   ├── vision_agent.py       # EXIF + composition analysis (sub-agent)
+│   └── knowledge_agent.py    # Gemini + RAG coaching (sub-agent)
 ├── tools/
 │   ├── mcp_server.py         # MCP JSON-RPC server ⭐
-│   ├── adk_adapter.py        # ADK tool definitions ⭐
+│   ├── adk_adapter.py        # Cloud ADK adapter ⭐
 │   ├── agentic_rag.py        # Hybrid CASCADE RAG
 │   ├── exif_tool.py          # Photo metadata extraction
 │   └── knowledge_base.py     # Curated photography knowledge
-├── demo_adk.py               # ADK demonstration script
-├── demo_mcp.py               # MCP demonstration script
+├── adk_runner.py             # Real ADK implementation ⭐
+├── demo_3_platforms.py       # Unified demo (ADK + MCP + Python) ⭐
 └── evaluate.py               # Automated evaluation harness
 ```
 
@@ -895,7 +894,7 @@ Tests whether responses include:
 ```bash
 # Test individual platforms
 python3 agents_capstone/adk_runner.py      # ADK Runner
-python3 demo_mcp.py                         # MCP Server
+python3 demo_3_platforms.py                 # All platforms demo
 python3 demo_3_platforms.py                 # All platforms
 ```
 

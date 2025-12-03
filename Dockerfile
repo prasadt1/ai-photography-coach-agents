@@ -1,7 +1,19 @@
 FROM python:3.11-slim
+
 WORKDIR /app
-COPY . /app
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
-EXPOSE 8501
-CMD ["streamlit", "run", "agents_capstone/app_streamlit.py", "--server.port=8501", "--server.headless=true"]
+
+# Copy only necessary files
+COPY requirements.txt .
+COPY agents_capstone/ ./agents_capstone/
+COPY demo_3_platforms.py .
+COPY demo_eval.py .
+
+# Install dependencies
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+
+# Default command: run demo
+CMD ["python3", "demo_3_platforms.py"]

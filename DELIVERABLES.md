@@ -8,13 +8,12 @@
 
 ## Required Artifacts
 
-### Documentation (5 guides)
+### Documentation
+- [x] **README.md** – Main project documentation (1000+ lines)
 - [x] **WRITEUP.md** – Full rubric mapping with file pointers and evidence
 - [x] **ADK_INTEGRATION.md** – ADK setup and course concept alignment
 - [x] **OBSERVABILITY.md** – Logs, traces, metrics documentation
-- [x] **DEMO_OUTLINE.md** – 5-minute walkthrough + video guide
-- [x] **SUBMISSION_README.md** – Quick start and submission checklist
-- [x] **COMPLETION_SUMMARY.md** – Summary of what was accomplished
+- [x] **DELIVERABLES.md** – This checklist (capstone requirements)
 
 ### Source Code (Core)
 - [x] **agents/orchestrator.py** – Multi-agent orchestration + ADK adapter
@@ -27,20 +26,15 @@
 - [x] **tools/knowledge_base.py** – Photography principles KB
 
 ### Application & Evaluation
-- [x] **demo_adk.py** – ADK tools demonstration
-- [x] **demo_mcp.py** – MCP server demonstration
+- [x] **adk_runner.py** – Real ADK implementation (google-adk 1.19.0) ⭐
+- [x] **demo_3_platforms.py** – Unified demo (ADK + MCP + Python API) ⭐
 - [x] **demo_eval.py** – LLM-as-Judge evaluation harness
-- [x] **tools/mcp_server.py** – Production MCP JSON-RPC 2.0 server
-- [x] **adk_tools.py** – Vertex AI Agent Builder compatible tools
+- [x] **tools/mcp_server.py** – Production MCP JSON-RPC 2.0 server (441 lines)
 - [x] **logging_config.py** – Structured JSON logging
 
 ### Deployment
-- [x] **Dockerfile** – Production container image
-- [x] **requirements.txt** – Pinned dependencies
-- [x] **scripts/docker_build_and_run.sh** – Docker smoke test *(NEW)*
-
-### Demo
-- [x] **notebooks/capstone_demo.ipynb** – Interactive Jupyter notebook *(NEW)*
+- [x] **Dockerfile** – Production container image (optimized)
+- [x] **requirements.txt** – Pinned dependencies including google-adk
 
 ---
 
@@ -104,22 +98,18 @@ python3 agents_capstone/tools/mcp_server.py
 ```
 **Expected:** MCP server starts on stdio, ready for Claude Desktop
 
-### 3. ADK Demo Works ✅
+### 3. Three-Platform Demo Works ✅
 ```bash
 export GOOGLE_API_KEY="your_key"
-python3 demo_adk.py
+python3 demo_3_platforms.py
 ```
-**Expected:** Shows tool definitions and runs analysis workflow
+**Expected:** Shows ADK Runner, MCP Server, and Python API all working
 
 ### 4. Evaluation Works ✅
 ```bash
-# From project root:
-python3 run_evaluation.py
-
-# Or quick version from agents_capstone/:
-cd agents_capstone && python3 quick_eval.py
+python3 demo_eval.py
 ```
-**Expected:** Creates `reports/` folder with CSV, JSON, HTML files
+**Expected:** Runs evaluation and displays score (8.58/10)
 
 ### 5. Docker Builds ✅
 ```bash
