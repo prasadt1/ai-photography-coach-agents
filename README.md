@@ -54,7 +54,7 @@ Upload any photo and get **personalized, AI-powered photography coaching** that:
 
 ## 🎥 Demo
 
-**🚀 Try it Live:** [ai-photography-coach.streamlit.app](https://ai-photography-coach.streamlit.app) *(Requires free Google Gemini API key)*
+**🚀 Try it Live:** [ai-agentic-photography-coach.streamlit.app](https://ai-agentic-photography-coach.streamlit.app) *(Requires free Google Gemini API key)*
 
 **📺 Watch the Demo:** [YouTube - 2:38 minutes](https://youtu.be/U77vk71Hmzc)
 

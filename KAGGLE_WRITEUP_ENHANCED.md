@@ -1,7 +1,7 @@
 # AI Photography Coach – Multi-Platform Agent System
 
-**📺 Demo Video:** [Watch on YouTube](https://youtu.be/YOUR_NEW_VIDEO_ID) *(Update with new recording)*  
-**🚀 Live Demo:** *(Redeploy Streamlit app with updated branch)*  
+**📺 Demo Video:** [Watch on YouTube](https://youtu.be/U77vk71Hmzc)  
+**🚀 Live Demo:** [ai-agentic-photography-coach.streamlit.app](https://ai-agentic-photography-coach.streamlit.app)  
 **💻 GitHub Repository:** https://github.com/prasadt1/ai-photography-coach-agents/tree/capstone-submission
 
 ⚠️ **Note:** Requires free Google Gemini API key (30-second setup at https://aistudio.google.com/app/apikey)
